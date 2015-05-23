@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7531" systemVersion="14D136" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="7h7-GM-EhU">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7520"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="toothbrush" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
+                        <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="120 seconds" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KZV-oN-qm3">
+                                <rect key="frame" x="205" y="279" width="191" height="41"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="34"/>
+                                <color key="textColor" red="0.95686274509803926" green="0.93725490196078431" blue="0.15294117647058825" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YKP-DO-6LF">
+                                <rect key="frame" x="0.0" y="500" width="600" height="100"/>
+                                <color key="backgroundColor" red="0.95686274510000002" green="0.93725490199999995" blue="0.1529411765" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="IC8-qo-7Mk"/>
+                                </constraints>
+                                <color key="tintColor" red="0.84705882349999995" green="0.0" blue="0.4941176471" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="Start Brushing">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="start:" destination="BYZ-38-t0r" eventType="touchUpInside" id="481-mN-6sg"/>
+                                </connections>
+                            </button>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BRUSH" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yg0-o5-28L">
+                                <rect key="frame" x="178" y="124" width="244" height="84"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="70"/>
+                                <color key="textColor" red="0.94901960784313721" green="0.93725490196078431" blue="0.12156862745098039" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" red="0.84705882349999995" green="0.0" blue="0.4941176471" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="centerX" secondItem="KZV-oN-qm3" secondAttribute="centerX" id="OCP-lf-db3"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="YKP-DO-6LF" secondAttribute="bottom" id="QwA-Lv-iVa"/>
+                            <constraint firstItem="Yg0-o5-28L" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="60" id="TOg-Aw-Opg"/>
+                            <constraint firstItem="YKP-DO-6LF" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="i7X-7V-voa"/>
+                            <constraint firstAttribute="trailing" secondItem="YKP-DO-6LF" secondAttribute="trailing" id="kVF-Mq-qiH"/>
+                            <constraint firstAttribute="centerY" secondItem="KZV-oN-qm3" secondAttribute="centerY" id="tee-hu-O4H"/>
+                            <constraint firstAttribute="centerX" secondItem="Yg0-o5-28L" secondAttribute="centerX" id="zJO-P7-tNI"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="1xS-LI-qv4"/>
+                    <connections>
+                        <outlet property="brushBtn" destination="YKP-DO-6LF" id="Y8m-oh-0fJ"/>
+                        <outlet property="brushText" destination="Yg0-o5-28L" id="rVH-Yh-4kb"/>
+                        <outlet property="seconds" destination="KZV-oN-qm3" id="iL6-kc-aVm"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="728" y="351"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="a5J-zc-q4O">
+            <objects>
+                <navigationController id="7h7-GM-EhU" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="4FM-wt-VUz">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="g1T-uN-yCV"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="LCB-tN-5Q8" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-18" y="351"/>
+        </scene>
+    </scenes>
+</document>
