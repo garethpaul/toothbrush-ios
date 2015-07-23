@@ -57,7 +57,7 @@ class ViewController: UIViewController {
         
         timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: Selector("subtractTime"), userInfo: nil, repeats: true)
         brushText.alpha = 0
-        UIView.animateWithDuration(0.5, delay: 0.5, options: UIViewAnimationOptions.Repeat | UIViewAnimationOptions.Autoreverse, animations: { () -> Void in
+        UIView.animateWithDuration(0.5, delay: 0.5, options: [UIViewAnimationOptions.Repeat, UIViewAnimationOptions.Autoreverse], animations: { () -> Void in
             self.brushText.alpha = 1
         }, completion: nil)
         
