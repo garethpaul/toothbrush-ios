@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Hardened the hex color helper so invalid or partially parsed color strings
+  fall back to gray instead of silently becoming black.
+- Extended `make test` with a source check for hex color parser validation.
 - Added a Makefile verification gate for project metadata and timer lifecycle
   source checks.
 - Fixed repeated Start taps so an existing countdown timer is invalidated before

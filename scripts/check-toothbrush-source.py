@@ -63,12 +63,35 @@ def timer_checks():
     return errors
 
 
+def color_checks():
+    errors = require_paths()
+    if errors:
+        return errors
+
+    source = read_text("toothbrush/Hex.swift")
+    if "NSScanner(string: cString).scanHexInt(&rgbValue)" in source:
+        errors.append("hex parser must not ignore the scanHexInt return value")
+    if "let scanner = NSScanner(string: cString)" not in source:
+        errors.append("hex parser must keep an NSScanner reference for validation")
+    if "scanner.scanHexInt(&rgbValue)" not in source:
+        errors.append("hex parser must scan the hex value through the validator")
+    if "scanner.scanLocation != cString.characters.count" not in source:
+        errors.append("hex parser must reject partially parsed hex strings")
+
+    return errors
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=("project", "timer"), required=True)
+    parser.add_argument("--mode", choices=("project", "timer", "color"), required=True)
     args = parser.parse_args()
 
-    errors = project_checks() if args.mode == "project" else timer_checks()
+    checks = {
+        "project": project_checks,
+        "timer": timer_checks,
+        "color": color_checks,
+    }
+    errors = checks[args.mode]()
     if errors:
         for error in errors:
             print(error, file=sys.stderr)

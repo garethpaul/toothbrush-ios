@@ -8,6 +8,7 @@ lint:
 
 test:
 	$(PYTHON) scripts/check-toothbrush-source.py --mode timer
+	$(PYTHON) scripts/check-toothbrush-source.py --mode color
 
 build: lint
 	@if command -v "$(XCODEBUILD)" >/dev/null 2>&1; then \
