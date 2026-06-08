@@ -38,7 +38,7 @@ Contribution rules:
 The app should remain a local timer. It should not collect health, habit, or
 device data unless an explicit privacy model is added.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Hidden analytics
 - Network-backed habit tracking
