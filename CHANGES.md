@@ -13,3 +13,5 @@
 - Clamped countdown completion at zero and stopped repeating brush-text
   animations when the timer finishes.
 - Invalidated the timer when the view controller is deallocated.
+- Added canonical `docs/plans` coverage and made project checks require
+  completed plans.
