@@ -74,4 +74,4 @@ Keep changes small and tied to the project that is already present in this repos
 
 Prior README summary:
 
-> Toothbrush iOS <!-- README-OVERVIEW-IMAGE --> <p> A simply app to help brush your teeth 😁</p>
+> Toothbrush iOS <p> A simply app to help brush your teeth 😁</p>
