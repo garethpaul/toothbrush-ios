@@ -1,5 +1,8 @@
 # toothbrush-ios
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 ## Overview
 
 `garethpaul/toothbrush-ios` is an Apple platform application or Swift sample. A toothbrush companion app. 
@@ -72,4 +75,3 @@ Keep changes small and tied to the project that is already present in this repos
 Prior README summary:
 
 > Toothbrush iOS <!-- README-OVERVIEW-IMAGE --> <p> A simply app to help brush your teeth 😁</p>
-
