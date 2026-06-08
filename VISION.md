@@ -35,6 +35,11 @@ Contribution rules:
 
 ## Security And Responsible Use
 
+Canonical security policy and reporting:
+
+- [`SECURITY.md`](SECURITY.md)
+
+
 The app should remain a local timer. It should not collect health, habit, or
 device data unless an explicit privacy model is added.
 
