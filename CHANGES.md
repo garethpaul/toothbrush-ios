@@ -2,6 +2,7 @@
 
 ## 2026-06-08
 
+- Added `make check` as the shared repository verification alias.
 - Hardened the hex color helper so invalid or partially parsed color strings
   fall back to gray instead of silently becoming black.
 - Extended `make test` with a source check for hex color parser validation.

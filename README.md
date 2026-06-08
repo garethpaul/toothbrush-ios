@@ -48,7 +48,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
-- `make verify` runs static project checks, timer lifecycle checks, and hex
+- `make check` runs static project checks, timer lifecycle checks, and hex
   color parser checks. When `xcodebuild` is installed, the `build` target also
   attempts an iOS simulator build with code signing disabled.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
