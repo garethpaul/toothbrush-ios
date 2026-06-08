@@ -24,7 +24,11 @@ class ViewController: UIViewController {
     var second = 0
     var count = 0
     var logoView: UIImageView!
-    
+
+    deinit {
+        timer.invalidate()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -50,12 +54,14 @@ class ViewController: UIViewController {
     }
     
     func setupTimer()  {
+        timer.invalidate()
         second = 120
         count = 0
 
         seconds.text = "\(second) seconds"
         
         timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: Selector("subtractTime"), userInfo: nil, repeats: true)
+        brushText.layer.removeAllAnimations()
         brushText.alpha = 0
         UIView.animateWithDuration(0.5, delay: 0.5, options: [UIViewAnimationOptions.Repeat, UIViewAnimationOptions.Autoreverse], animations: { () -> Void in
             self.brushText.alpha = 1
@@ -67,15 +73,17 @@ class ViewController: UIViewController {
 
     func subtractTime() {
         second--
-        seconds.text = "\(second) seconds"
-        
-        if(second == 0)  {
+
+        if(second <= 0)  {
+            second = 0
             timer.invalidate()
+            brushText.layer.removeAllAnimations()
             brushBtn.hidden = false
             brushText.hidden = true
         }
+
+        seconds.text = "\(second) seconds"
     }
 
-    
-}
 
+}
