@@ -88,6 +88,8 @@ def timer_checks():
         errors.append("view disappearance must stop the timer through the shared reset path")
     for fragment in (
         "timer.invalidate()",
+        "second = 0",
+        "updateTimerLabel()",
         "brushText.layer.removeAllAnimations()",
         "brushBtn.hidden = false",
         "brushText.hidden = true",

@@ -2,6 +2,9 @@
 
 ## 2026-06-09
 
+- Reset the countdown value and synchronized timer label when the shared reset
+  path runs.
+- Extended timer lifecycle checks to require reset-state label synchronization.
 - Added a shared timer reset path and call it when the view disappears.
 - Extended timer lifecycle checks to require the view-disappear reset path.
 

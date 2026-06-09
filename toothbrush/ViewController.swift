@@ -106,6 +106,8 @@ class ViewController: UIViewController {
 
     func stopTimerAndResetPrompt() {
         timer.invalidate()
+        second = 0
+        updateTimerLabel()
         brushText.layer.removeAllAnimations()
         brushBtn.hidden = false
         brushText.hidden = true

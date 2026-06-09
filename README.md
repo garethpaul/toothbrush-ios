@@ -60,7 +60,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   signing disabled.
 - Timer lifecycle checks also require teardown to invalidate timers and remove
   the custom navigation logo view. They also require view disappearance to stop
-  an active timer through the shared reset path.
+  an active timer through the shared reset path, and that reset path must zero
+  the countdown while keeping the timer label and accessibility value in sync.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -89,6 +90,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   teardown coverage.
 - See `docs/plans/2026-06-09-view-disappear-timer-reset.md` for the
   view-disappear timer reset guard.
+- See `docs/plans/2026-06-09-reset-label-sync.md` for the shared reset label
+  synchronization guard.
 
 ## Contributing
 

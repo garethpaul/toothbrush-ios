@@ -17,6 +17,7 @@ Priority:
 - Preserve the 120-second countdown flow
 - Keep the start/reset visual state obvious
 - Keep timer accessibility labels and values synchronized with visible state
+- Keep shared timer resets synchronized with countdown state
 - Keep custom navigation views tied to controller teardown
 - Stop active countdown timers when the view leaves screen
 - Maintain the app GIF as behavior context
