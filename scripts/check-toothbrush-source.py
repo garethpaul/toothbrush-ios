@@ -78,6 +78,8 @@ def timer_checks():
     deinit_body = deinit.group("body") if deinit else ""
     if "timer.invalidate()" not in setup_body:
         errors.append("setupTimer must invalidate any existing timer before scheduling")
+    if "timer.tolerance = 0.1" not in setup_body:
+        errors.append("setupTimer must set a small tolerance on the repeating timer")
     if 'if(second == 0)' in source:
         errors.append("countdown completion must handle zero and negative values")
     if "if(second <= 0)" not in source:

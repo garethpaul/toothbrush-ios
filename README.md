@@ -62,7 +62,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   the custom navigation logo view. They also require view disappearance to stop
   an active timer through the shared reset path, and that reset path must zero
   the countdown while keeping the timer label, accessibility value, and prompt
-  visibility state in sync.
+  visibility state in sync. The repeating countdown timer must also set a small
+  scheduling tolerance.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -95,6 +96,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   synchronization guard.
 - See `docs/plans/2026-06-09-prompt-alpha-reset.md` for the prompt reset-state
   guard.
+- See `docs/plans/2026-06-09-timer-tolerance.md` for the countdown timer
+  tolerance guard.
 
 ## Contributing
 

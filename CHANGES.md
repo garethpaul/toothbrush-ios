@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added a small scheduling tolerance to the repeating countdown timer and
+  extended static timer checks to require it.
 - Reset the brushing prompt alpha when the shared timer reset path stops the
   repeating animation.
 - Reset the countdown value and synchronized timer label when the shared reset

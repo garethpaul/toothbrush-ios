@@ -19,6 +19,7 @@ Priority:
 - Keep timer accessibility labels and values synchronized with visible state
 - Keep shared timer resets synchronized with countdown state
 - Keep prompt animation state deterministic after shared timer resets
+- Keep repeating countdown timers tolerant enough for efficient scheduling
 - Keep custom navigation views tied to controller teardown
 - Stop active countdown timers when the view leaves screen
 - Maintain the app GIF as behavior context
