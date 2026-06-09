@@ -27,6 +27,7 @@ class ViewController: UIViewController {
 
     deinit {
         timer.invalidate()
+        logoView?.removeFromSuperview()
     }
 
     override func viewDidLoad() {

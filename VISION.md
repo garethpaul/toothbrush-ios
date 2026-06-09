@@ -17,6 +17,7 @@ Priority:
 - Preserve the 120-second countdown flow
 - Keep the start/reset visual state obvious
 - Keep timer accessibility labels and values synchronized with visible state
+- Keep custom navigation views tied to controller teardown
 - Maintain the app GIF as behavior context
 - Keep completed maintenance plans under `docs/plans`
 - Treat Swift and Xcode versions as legacy until documented

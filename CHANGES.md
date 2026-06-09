@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Removed the custom navigation logo during controller teardown and tightened
+  the static deinit lifecycle check.
+- Ignored Python bytecode caches produced by local checker syntax validation.
 - Added timer/start/prompt accessibility labels and static checks that keep the
   timer accessibility value synchronized with visible countdown text.
 - Added `make check` as the shared repository verification alias.

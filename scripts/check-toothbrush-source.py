@@ -68,6 +68,8 @@ def timer_checks():
     source = read_text("toothbrush/ViewController.swift")
     setup = re.search(r"func setupTimer\(\).*?func subtractTime", source, re.S)
     setup_body = setup.group(0) if setup else ""
+    deinit = re.search(r"deinit\s*\{(?P<body>.*?)\n\s*\}", source, re.S)
+    deinit_body = deinit.group("body") if deinit else ""
     if "timer.invalidate()" not in setup_body:
         errors.append("setupTimer must invalidate any existing timer before scheduling")
     if 'if(second == 0)' in source:
@@ -76,8 +78,10 @@ def timer_checks():
         errors.append("countdown completion must use second <= 0")
     if "brushText.layer.removeAllAnimations()" not in source:
         errors.append("countdown completion must stop the repeating brush-text animation")
-    if "deinit" not in source or "timer.invalidate()" not in source.split("deinit", 1)[-1]:
+    if "timer.invalidate()" not in deinit_body:
         errors.append("ViewController must invalidate its timer during deinit")
+    if "logoView?.removeFromSuperview()" not in deinit_body:
+        errors.append("ViewController must remove the navigation logo during deinit")
 
     return errors
 
