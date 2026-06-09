@@ -68,6 +68,12 @@ def timer_checks():
     source = read_text("toothbrush/ViewController.swift")
     setup = re.search(r"func setupTimer\(\).*?func subtractTime", source, re.S)
     setup_body = setup.group(0) if setup else ""
+    subtract = re.search(r"func subtractTime\(\).*?override func viewWillDisappear", source, re.S)
+    subtract_body = subtract.group(0) if subtract else ""
+    disappear = re.search(r"override func viewWillDisappear\(animated: Bool\).*?func setupAccessibility", source, re.S)
+    disappear_body = disappear.group(0) if disappear else ""
+    reset = re.search(r"func stopTimerAndResetPrompt\(\)\s*\{(?P<body>.*?)\n\s*\}", source, re.S)
+    reset_body = reset.group("body") if reset else ""
     deinit = re.search(r"deinit\s*\{(?P<body>.*?)\n\s*\}", source, re.S)
     deinit_body = deinit.group("body") if deinit else ""
     if "timer.invalidate()" not in setup_body:
@@ -76,8 +82,18 @@ def timer_checks():
         errors.append("countdown completion must handle zero and negative values")
     if "if(second <= 0)" not in source:
         errors.append("countdown completion must use second <= 0")
-    if "brushText.layer.removeAllAnimations()" not in source:
-        errors.append("countdown completion must stop the repeating brush-text animation")
+    if "stopTimerAndResetPrompt()" not in subtract_body:
+        errors.append("countdown completion must stop the timer through the shared reset path")
+    if "stopTimerAndResetPrompt()" not in disappear_body:
+        errors.append("view disappearance must stop the timer through the shared reset path")
+    for fragment in (
+        "timer.invalidate()",
+        "brushText.layer.removeAllAnimations()",
+        "brushBtn.hidden = false",
+        "brushText.hidden = true",
+    ):
+        if fragment not in reset_body:
+            errors.append(f"shared timer reset path is missing: {fragment}")
     if "timer.invalidate()" not in deinit_body:
         errors.append("ViewController must invalidate its timer during deinit")
     if "logoView?.removeFromSuperview()" not in deinit_body:

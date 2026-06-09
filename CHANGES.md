@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-09
+
+- Added a shared timer reset path and call it when the view disappears.
+- Extended timer lifecycle checks to require the view-disappear reset path.
+
 ## 2026-06-08
 
 - Removed the custom navigation logo during controller teardown and tightened

@@ -79,13 +79,15 @@ class ViewController: UIViewController {
 
         if(second <= 0)  {
             second = 0
-            timer.invalidate()
-            brushText.layer.removeAllAnimations()
-            brushBtn.hidden = false
-            brushText.hidden = true
+            stopTimerAndResetPrompt()
         }
 
         updateTimerLabel()
+    }
+
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopTimerAndResetPrompt()
     }
 
     func setupAccessibility() {
@@ -100,6 +102,13 @@ class ViewController: UIViewController {
         let labelText = "\(second) seconds"
         seconds.text = labelText
         seconds.accessibilityValue = labelText
+    }
+
+    func stopTimerAndResetPrompt() {
+        timer.invalidate()
+        brushText.layer.removeAllAnimations()
+        brushBtn.hidden = false
+        brushText.hidden = true
     }
 
 }

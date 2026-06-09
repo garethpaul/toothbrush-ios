@@ -18,6 +18,7 @@ Priority:
 - Keep the start/reset visual state obvious
 - Keep timer accessibility labels and values synchronized with visible state
 - Keep custom navigation views tied to controller teardown
+- Stop active countdown timers when the view leaves screen
 - Maintain the app GIF as behavior context
 - Keep completed maintenance plans under `docs/plans`
 - Treat Swift and Xcode versions as legacy until documented
@@ -50,6 +51,7 @@ device data unless an explicit privacy model is added.
 - Hidden analytics
 - Network-backed habit tracking
 - Health data collection
+- Countdown timers that retain dismissed controllers
 - Broad redesigns that obscure the simple timer purpose
 
 This list is a roadmap guardrail, not a permanent rule.
