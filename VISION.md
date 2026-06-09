@@ -20,7 +20,8 @@ Priority:
 - Keep shared timer resets synchronized with countdown state
 - Keep prompt animation state deterministic after shared timer resets
 - Keep repeating countdown timers tolerant enough for efficient scheduling
-- Keep custom navigation views tied to controller teardown
+- Keep custom navigation views tied to controller appearance, disappearance,
+  and teardown
 - Stop active countdown timers when the view leaves screen
 - Maintain the app GIF as behavior context
 - Keep completed maintenance plans under `docs/plans`

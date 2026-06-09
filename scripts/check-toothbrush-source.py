@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DOCS_PLANS = ROOT / "docs" / "plans"
 CANONICAL_PLAN = DOCS_PLANS / "2026-06-08-toothbrush-ios-baseline.md"
+NAVIGATION_LOGO_LIFECYCLE_PLAN = DOCS_PLANS / "2026-06-09-navigation-logo-lifecycle.md"
 
 
 def read_text(relative_path):
@@ -32,6 +33,8 @@ def docs_plan_checks():
     errors = []
     if not CANONICAL_PLAN.exists():
         errors.append("docs/plans/2026-06-08-toothbrush-ios-baseline.md is missing")
+    if not NAVIGATION_LOGO_LIFECYCLE_PLAN.exists():
+        errors.append("docs/plans/2026-06-09-navigation-logo-lifecycle.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -70,6 +73,8 @@ def timer_checks():
     setup_body = setup.group(0) if setup else ""
     subtract = re.search(r"func subtractTime\(\).*?override func viewWillDisappear", source, re.S)
     subtract_body = subtract.group(0) if subtract else ""
+    appear = re.search(r"override func viewWillAppear\(animated: Bool\).*?override func didReceiveMemoryWarning", source, re.S)
+    appear_body = appear.group(0) if appear else ""
     disappear = re.search(r"override func viewWillDisappear\(animated: Bool\).*?func setupAccessibility", source, re.S)
     disappear_body = disappear.group(0) if disappear else ""
     reset = re.search(r"func stopTimerAndResetPrompt\(\)\s*\{(?P<body>.*?)\n\s*\}", source, re.S)
@@ -88,6 +93,10 @@ def timer_checks():
         errors.append("countdown completion must stop the timer through the shared reset path")
     if "stopTimerAndResetPrompt()" not in disappear_body:
         errors.append("view disappearance must stop the timer through the shared reset path")
+    if "showNavigationLogo()" not in appear_body:
+        errors.append("view appearance must reattach the navigation logo")
+    if "removeNavigationLogo()" not in disappear_body:
+        errors.append("view disappearance must remove the navigation logo")
     for fragment in (
         "timer.invalidate()",
         "second = 0",
@@ -101,8 +110,19 @@ def timer_checks():
             errors.append(f"shared timer reset path is missing: {fragment}")
     if "timer.invalidate()" not in deinit_body:
         errors.append("ViewController must invalidate its timer during deinit")
-    if "logoView?.removeFromSuperview()" not in deinit_body:
+    if "removeNavigationLogo()" not in deinit_body:
         errors.append("ViewController must remove the navigation logo during deinit")
+    for fragment in (
+        "func showNavigationLogo()",
+        "if let logoView = logoView",
+        "logoView.superview == nil",
+        "addSubview(logoView)",
+        "bringSubviewToFront(logoView)",
+        "func removeNavigationLogo()",
+        "logoView?.removeFromSuperview()",
+    ):
+        if fragment not in source:
+            errors.append(f"navigation logo lifecycle is missing: {fragment}")
 
     return errors
 

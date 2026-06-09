@@ -59,9 +59,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   installed, the `build` target also attempts an iOS simulator build with code
   signing disabled.
 - Timer lifecycle checks also require teardown to invalidate timers and remove
-  the custom navigation logo view. They also require view disappearance to stop
-  an active timer through the shared reset path, and that reset path must zero
-  the countdown while keeping the timer label, accessibility value, and prompt
+  the custom navigation logo view. They also require view appearance to
+  reattach the logo and view disappearance to stop an active timer through the
+  shared reset path while removing the logo. The reset path must zero the
+  countdown while keeping the timer label, accessibility value, and prompt
   visibility state in sync. The repeating countdown timer must also set a small
   scheduling tolerance.
 - Static project checks also require completed canonical plans under `docs/plans`.
@@ -98,6 +99,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   guard.
 - See `docs/plans/2026-06-09-timer-tolerance.md` for the countdown timer
   tolerance guard.
+- See `docs/plans/2026-06-09-navigation-logo-lifecycle.md` for the navigation
+  logo appearance/disappearance guard.
 
 ## Contributing
 

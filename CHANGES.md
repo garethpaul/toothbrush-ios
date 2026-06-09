@@ -2,6 +2,10 @@
 
 ## 2026-06-09
 
+- Reattached the custom navigation logo on view appearance and removed it on
+  view disappearance, not only controller teardown.
+- Extended static timer checks to require navigation logo appearance and
+  disappearance lifecycle coverage.
 - Added a small scheduling tolerance to the repeating countdown timer and
   extended static timer checks to require it.
 - Reset the brushing prompt alpha when the shared timer reset path stops the

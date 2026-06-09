@@ -27,7 +27,7 @@ class ViewController: UIViewController {
 
     deinit {
         timer.invalidate()
-        logoView?.removeFromSuperview()
+        removeNavigationLogo()
     }
 
     override func viewDidLoad() {
@@ -39,16 +39,17 @@ class ViewController: UIViewController {
         logoView.frame.origin.x = (self.view.frame.size.width - logoView.frame.size.width) / 2
         logoView.frame.origin.y = 20
         
-        // Add the logo view to the navigation controller.
-        self.navigationController?.view.addSubview(logoView)
-        
-        // Bring the logo view to the front.
-        self.navigationController?.view.bringSubviewToFront(logoView)
         self.navigationController?.navigationBar.barTintColor = toColor("#F6EC28")
 
+        showNavigationLogo()
         setupAccessibility()
 
         // Do any additional setup after loading the view, typically from a nib.
+    }
+
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        showNavigationLogo()
     }
 
     override func didReceiveMemoryWarning() {
@@ -89,6 +90,20 @@ class ViewController: UIViewController {
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
         stopTimerAndResetPrompt()
+        removeNavigationLogo()
+    }
+
+    func showNavigationLogo() {
+        if let logoView = logoView {
+            if logoView.superview == nil {
+                self.navigationController?.view.addSubview(logoView)
+            }
+            self.navigationController?.view.bringSubviewToFront(logoView)
+        }
+    }
+
+    func removeNavigationLogo() {
+        logoView?.removeFromSuperview()
     }
 
     func setupAccessibility() {
