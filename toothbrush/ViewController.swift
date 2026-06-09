@@ -45,6 +45,8 @@ class ViewController: UIViewController {
         self.navigationController?.view.bringSubviewToFront(logoView)
         self.navigationController?.navigationBar.barTintColor = toColor("#F6EC28")
 
+        setupAccessibility()
+
         // Do any additional setup after loading the view, typically from a nib.
     }
 
@@ -58,7 +60,7 @@ class ViewController: UIViewController {
         second = 120
         count = 0
 
-        seconds.text = "\(second) seconds"
+        updateTimerLabel()
         
         timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: Selector("subtractTime"), userInfo: nil, repeats: true)
         brushText.layer.removeAllAnimations()
@@ -82,8 +84,21 @@ class ViewController: UIViewController {
             brushText.hidden = true
         }
 
-        seconds.text = "\(second) seconds"
+        updateTimerLabel()
     }
 
+    func setupAccessibility() {
+        seconds.accessibilityLabel = "Brushing timer"
+        seconds.accessibilityValue = seconds.text
+        brushBtn.accessibilityLabel = "Start brushing timer"
+        brushBtn.accessibilityHint = "Starts a two minute brushing countdown"
+        brushText.accessibilityLabel = "Brushing reminder"
+    }
+
+    func updateTimerLabel() {
+        let labelText = "\(second) seconds"
+        seconds.text = labelText
+        seconds.accessibilityValue = labelText
+    }
 
 }

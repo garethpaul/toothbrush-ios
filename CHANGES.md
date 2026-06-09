@@ -2,6 +2,8 @@
 
 ## 2026-06-08
 
+- Added timer/start/prompt accessibility labels and static checks that keep the
+  timer accessibility value synchronized with visible countdown text.
 - Added `make check` as the shared repository verification alias.
 - Hardened the hex color helper so invalid or partially parsed color strings
   fall back to gray instead of silently becoming black.

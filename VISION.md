@@ -16,6 +16,7 @@ Priority:
 
 - Preserve the 120-second countdown flow
 - Keep the start/reset visual state obvious
+- Keep timer accessibility labels and values synchronized with visible state
 - Maintain the app GIF as behavior context
 - Keep completed maintenance plans under `docs/plans`
 - Treat Swift and Xcode versions as legacy until documented
@@ -25,7 +26,7 @@ Next priorities:
 - Add README setup notes for Xcode and simulator versions
 - Add a completion state that is testable without waiting two minutes
 - Modernize timer APIs and Swift syntax in a dedicated pass
-- Add accessibility labels for the timer and start button
+- Add simulator-backed accessibility assertions when Xcode is available
 
 Contribution rules:
 

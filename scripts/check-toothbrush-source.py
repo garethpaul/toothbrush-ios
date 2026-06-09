@@ -100,15 +100,40 @@ def color_checks():
     return errors
 
 
+def accessibility_checks():
+    errors = require_paths()
+    if errors:
+        return errors
+
+    source = read_text("toothbrush/ViewController.swift")
+    for fragment in (
+        "setupAccessibility()",
+        'seconds.accessibilityLabel = "Brushing timer"',
+        "seconds.accessibilityValue = seconds.text",
+        'brushBtn.accessibilityLabel = "Start brushing timer"',
+        'brushBtn.accessibilityHint = "Starts a two minute brushing countdown"',
+        'brushText.accessibilityLabel = "Brushing reminder"',
+        "func updateTimerLabel()",
+        "seconds.accessibilityValue = labelText",
+    ):
+        if fragment not in source:
+            errors.append(f"accessibility setup is missing: {fragment}")
+    if source.count("updateTimerLabel()") < 3:
+        errors.append("timer updates must keep visible text and accessibility value in sync")
+
+    return errors
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=("project", "timer", "color"), required=True)
+    parser.add_argument("--mode", choices=("project", "timer", "color", "accessibility"), required=True)
     args = parser.parse_args()
 
     checks = {
         "project": project_checks,
         "timer": timer_checks,
         "color": color_checks,
+        "accessibility": accessibility_checks,
     }
     errors = checks[args.mode]()
     if errors:

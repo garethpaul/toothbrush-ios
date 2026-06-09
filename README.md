@@ -54,9 +54,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
-- `make check` runs static project checks, timer lifecycle checks, and hex
-  color parser checks. When `xcodebuild` is installed, the `build` target also
-  attempts an iOS simulator build with code signing disabled.
+- `make check` runs static project checks, timer lifecycle checks, hex color
+  parser checks, and timer accessibility checks. When `xcodebuild` is
+  installed, the `build` target also attempts an iOS simulator build with code
+  signing disabled.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -79,6 +80,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-toothbrush-ios-baseline.md` for the canonical
   timer and color validation baseline.
+- See `docs/plans/2026-06-08-timer-accessibility.md` for timer accessibility
+  label coverage.
 
 ## Contributing
 
