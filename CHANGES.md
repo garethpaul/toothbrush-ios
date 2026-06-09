@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Reset the brushing prompt alpha when the shared timer reset path stops the
+  repeating animation.
 - Reset the countdown value and synchronized timer label when the shared reset
   path runs.
 - Extended timer lifecycle checks to require reset-state label synchronization.

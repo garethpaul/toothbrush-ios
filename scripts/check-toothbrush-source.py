@@ -91,6 +91,7 @@ def timer_checks():
         "second = 0",
         "updateTimerLabel()",
         "brushText.layer.removeAllAnimations()",
+        "brushText.alpha = 0",
         "brushBtn.hidden = false",
         "brushText.hidden = true",
     ):

@@ -18,6 +18,7 @@ Priority:
 - Keep the start/reset visual state obvious
 - Keep timer accessibility labels and values synchronized with visible state
 - Keep shared timer resets synchronized with countdown state
+- Keep prompt animation state deterministic after shared timer resets
 - Keep custom navigation views tied to controller teardown
 - Stop active countdown timers when the view leaves screen
 - Maintain the app GIF as behavior context
@@ -53,6 +54,7 @@ device data unless an explicit privacy model is added.
 - Network-backed habit tracking
 - Health data collection
 - Countdown timers that retain dismissed controllers
+- Prompt animation state that survives timer reset
 - Broad redesigns that obscure the simple timer purpose
 
 This list is a roadmap guardrail, not a permanent rule.
