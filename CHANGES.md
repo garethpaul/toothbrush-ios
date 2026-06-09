@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added the brushing countdown timer to common run-loop modes so UI
+  interactions do not pause ticks.
 - Reattached the custom navigation logo on view appearance and removed it on
   view disappearance, not only controller teardown.
 - Extended static timer checks to require navigation logo appearance and

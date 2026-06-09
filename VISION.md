@@ -20,6 +20,7 @@ Priority:
 - Keep shared timer resets synchronized with countdown state
 - Keep prompt animation state deterministic after shared timer resets
 - Keep repeating countdown timers tolerant enough for efficient scheduling
+- Keep countdown ticks active during normal UI tracking interactions
 - Keep custom navigation views tied to controller appearance, disappearance,
   and teardown
 - Stop active countdown timers when the view leaves screen

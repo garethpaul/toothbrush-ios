@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS_PLANS = ROOT / "docs" / "plans"
 CANONICAL_PLAN = DOCS_PLANS / "2026-06-08-toothbrush-ios-baseline.md"
 NAVIGATION_LOGO_LIFECYCLE_PLAN = DOCS_PLANS / "2026-06-09-navigation-logo-lifecycle.md"
+TIMER_RUN_LOOP_PLAN = DOCS_PLANS / "2026-06-09-timer-run-loop-modes.md"
 
 
 def read_text(relative_path):
@@ -35,6 +36,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-08-toothbrush-ios-baseline.md is missing")
     if not NAVIGATION_LOGO_LIFECYCLE_PLAN.exists():
         errors.append("docs/plans/2026-06-09-navigation-logo-lifecycle.md is missing")
+    if not TIMER_RUN_LOOP_PLAN.exists():
+        errors.append("docs/plans/2026-06-09-timer-run-loop-modes.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -85,6 +88,8 @@ def timer_checks():
         errors.append("setupTimer must invalidate any existing timer before scheduling")
     if "timer.tolerance = 0.1" not in setup_body:
         errors.append("setupTimer must set a small tolerance on the repeating timer")
+    if "NSRunLoop.mainRunLoop().addTimer(timer, forMode: NSRunLoopCommonModes)" not in setup_body:
+        errors.append("setupTimer must add the countdown timer to common run-loop modes")
     if 'if(second == 0)' in source:
         errors.append("countdown completion must handle zero and negative values")
     if "if(second <= 0)" not in source:

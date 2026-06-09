@@ -64,7 +64,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   shared reset path while removing the logo. The reset path must zero the
   countdown while keeping the timer label, accessibility value, and prompt
   visibility state in sync. The repeating countdown timer must also set a small
-  scheduling tolerance.
+  scheduling tolerance and run in common run-loop modes.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
@@ -99,6 +99,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   guard.
 - See `docs/plans/2026-06-09-timer-tolerance.md` for the countdown timer
   tolerance guard.
+- See `docs/plans/2026-06-09-timer-run-loop-modes.md` for the countdown timer
+  common run-loop mode guard.
 - See `docs/plans/2026-06-09-navigation-logo-lifecycle.md` for the navigation
   logo appearance/disappearance guard.
 
