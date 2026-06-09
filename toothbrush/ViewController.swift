@@ -36,8 +36,7 @@ class ViewController: UIViewController {
         logoView = UIImageView(frame: CGRectMake(0, 0, 40, 40))
         logoView.image = UIImage(named: "logo")?.imageWithRenderingMode(.AlwaysTemplate)
         logoView.tintColor = toColor("#EA0796")
-        logoView.frame.origin.x = (self.view.frame.size.width - logoView.frame.size.width) / 2
-        logoView.frame.origin.y = 20
+        updateNavigationLogoFrame()
         
         self.navigationController?.navigationBar.barTintColor = toColor("#F6EC28")
 
@@ -50,6 +49,11 @@ class ViewController: UIViewController {
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         showNavigationLogo()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateNavigationLogoFrame()
     }
 
     override func didReceiveMemoryWarning() {
@@ -96,10 +100,18 @@ class ViewController: UIViewController {
 
     func showNavigationLogo() {
         if let logoView = logoView {
+            updateNavigationLogoFrame()
             if logoView.superview == nil {
                 self.navigationController?.view.addSubview(logoView)
             }
             self.navigationController?.view.bringSubviewToFront(logoView)
+        }
+    }
+
+    func updateNavigationLogoFrame() {
+        if let logoView = logoView {
+            logoView.frame.origin.x = (self.view.frame.size.width - logoView.frame.size.width) / 2
+            logoView.frame.origin.y = 20
         }
     }
 

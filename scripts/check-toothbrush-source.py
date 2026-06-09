@@ -10,6 +10,7 @@ DOCS_PLANS = ROOT / "docs" / "plans"
 CANONICAL_PLAN = DOCS_PLANS / "2026-06-08-toothbrush-ios-baseline.md"
 NAVIGATION_LOGO_LIFECYCLE_PLAN = DOCS_PLANS / "2026-06-09-navigation-logo-lifecycle.md"
 TIMER_RUN_LOOP_PLAN = DOCS_PLANS / "2026-06-09-timer-run-loop-modes.md"
+NAVIGATION_LOGO_LAYOUT_PLAN = DOCS_PLANS / "2026-06-09-navigation-logo-layout.md"
 
 
 def read_text(relative_path):
@@ -38,6 +39,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-09-navigation-logo-lifecycle.md is missing")
     if not TIMER_RUN_LOOP_PLAN.exists():
         errors.append("docs/plans/2026-06-09-timer-run-loop-modes.md is missing")
+    if not NAVIGATION_LOGO_LAYOUT_PLAN.exists():
+        errors.append("docs/plans/2026-06-09-navigation-logo-layout.md is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -78,6 +81,8 @@ def timer_checks():
     subtract_body = subtract.group(0) if subtract else ""
     appear = re.search(r"override func viewWillAppear\(animated: Bool\).*?override func didReceiveMemoryWarning", source, re.S)
     appear_body = appear.group(0) if appear else ""
+    layout = re.search(r"override func viewDidLayoutSubviews\(\).*?override func didReceiveMemoryWarning", source, re.S)
+    layout_body = layout.group(0) if layout else ""
     disappear = re.search(r"override func viewWillDisappear\(animated: Bool\).*?func setupAccessibility", source, re.S)
     disappear_body = disappear.group(0) if disappear else ""
     reset = re.search(r"func stopTimerAndResetPrompt\(\)\s*\{(?P<body>.*?)\n\s*\}", source, re.S)
@@ -100,6 +105,10 @@ def timer_checks():
         errors.append("view disappearance must stop the timer through the shared reset path")
     if "showNavigationLogo()" not in appear_body:
         errors.append("view appearance must reattach the navigation logo")
+    if "super.viewDidLayoutSubviews()" not in layout_body:
+        errors.append("layout updates must call super.viewDidLayoutSubviews()")
+    if "updateNavigationLogoFrame()" not in layout_body:
+        errors.append("layout updates must recenter the navigation logo")
     if "removeNavigationLogo()" not in disappear_body:
         errors.append("view disappearance must remove the navigation logo")
     for fragment in (
@@ -120,6 +129,9 @@ def timer_checks():
     for fragment in (
         "func showNavigationLogo()",
         "if let logoView = logoView",
+        "func updateNavigationLogoFrame()",
+        "logoView.frame.origin.x = (self.view.frame.size.width - logoView.frame.size.width) / 2",
+        "logoView.frame.origin.y = 20",
         "logoView.superview == nil",
         "addSubview(logoView)",
         "bringSubviewToFront(logoView)",
@@ -128,6 +140,8 @@ def timer_checks():
     ):
         if fragment not in source:
             errors.append(f"navigation logo lifecycle is missing: {fragment}")
+    if source.count("updateNavigationLogoFrame()") < 4:
+        errors.append("navigation logo frame must be refreshed during setup, layout, and reattachment")
 
     return errors
 

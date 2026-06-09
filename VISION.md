@@ -23,6 +23,7 @@ Priority:
 - Keep countdown ticks active during normal UI tracking interactions
 - Keep custom navigation views tied to controller appearance, disappearance,
   and teardown
+- Keep the custom navigation logo centered after layout changes
 - Stop active countdown timers when the view leaves screen
 - Maintain the app GIF as behavior context
 - Keep completed maintenance plans under `docs/plans`
@@ -58,6 +59,7 @@ device data unless an explicit privacy model is added.
 - Health data collection
 - Countdown timers that retain dismissed controllers
 - Prompt animation state that survives timer reset
+- Custom navigation views with stale layout after size changes
 - Broad redesigns that obscure the simple timer purpose
 
 This list is a roadmap guardrail, not a permanent rule.

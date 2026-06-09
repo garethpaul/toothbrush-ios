@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Recentered the custom navigation logo during layout passes and extended
+  static timer checks to require the layout refresh.
 - Added the brushing countdown timer to common run-loop modes so UI
   interactions do not pause ticks.
 - Reattached the custom navigation logo on view appearance and removed it on
