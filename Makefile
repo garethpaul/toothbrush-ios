@@ -14,7 +14,7 @@ test:
 
 build: lint
 	@if command -v "$(XCODEBUILD)" >/dev/null 2>&1; then \
-		"$(XCODEBUILD)" -project "$(ROOT)/toothbrush.xcodeproj" -target toothbrushTests -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build; \
+		"$(XCODEBUILD)" -project "$(ROOT)/toothbrush.xcodeproj" -target toothbrushTests -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES build; \
 	else \
 		echo "xcodebuild not found; static project checks completed"; \
 	fi

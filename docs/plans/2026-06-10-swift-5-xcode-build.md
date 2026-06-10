@@ -24,6 +24,8 @@ Xcode signal.
 - Made timer ownership optional and clear the timer after invalidation.
 - Raised the deployment target to iOS 12 and set explicit app/test bundle IDs.
 - Removed the obsolete armv7-only device capability from the app plist.
+- Completed the modern app icon catalog with iPad Pro and App Store sizes
+  derived from the existing high-resolution toothbrush artwork.
 - Replaced placeholder XCTest methods with valid and partial hex-color parser
   assertions.
 - Changed `make build` to compile the app and XCTest target for the simulator

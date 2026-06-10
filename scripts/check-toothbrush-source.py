@@ -28,6 +28,8 @@ def require_paths():
         "toothbrush/Hex.swift",
         "toothbrush/Info.plist",
         "toothbrushTests/toothbrushTests.swift",
+        "toothbrush/Images.xcassets/AppIcon.appiconset/Icon-83.5@2x.png",
+        "toothbrush/Images.xcassets/AppIcon.appiconset/Icon-AppStore-1024.png",
     ):
         if not (ROOT / relative_path).exists():
             errors.append(f"missing required file: {relative_path}")
@@ -112,6 +114,8 @@ def project_checks():
         "-target toothbrushTests",
         "-sdk iphonesimulator",
         "CODE_SIGNING_ALLOWED=NO",
+        "ONLY_ACTIVE_ARCH=NO",
+        "DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES",
     ):
         if fragment not in makefile:
             errors.append(f"Makefile is missing expected build setting: {fragment}")
@@ -141,6 +145,11 @@ def project_checks():
         errors.append("app plist must not require the obsolete armv7 capability")
     if "$(PRODUCT_BUNDLE_IDENTIFIER)" not in app_plist:
         errors.append("app plist must use the target product bundle identifier")
+
+    app_icons = read_text("toothbrush/Images.xcassets/AppIcon.appiconset/Contents.json")
+    for filename in ("Icon-83.5@2x.png", "Icon-AppStore-1024.png"):
+        if f'"filename" : "{filename}"' not in app_icons:
+            errors.append(f"app icon catalog is missing modern size: {filename}")
 
     tests = read_text("toothbrushTests/toothbrushTests.swift")
     for fragment in (

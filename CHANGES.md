@@ -8,6 +8,8 @@
   parser assertions.
 - Added a macOS 15/Xcode 16.4 CI job that compiles the app and XCTest target,
   while fixing the portable job to Ubuntu 24.04 with concurrency cancellation.
+- Completed the modern app icon catalog with 167-pixel iPad and 1024-pixel App
+  Store assets derived from the existing toothbrush artwork.
 - Made Makefile verification independent of the caller's working directory and
   extended static contracts for the modern project and hosted build.
 - Added a least-privilege GitHub Actions workflow that runs the SDK-free
