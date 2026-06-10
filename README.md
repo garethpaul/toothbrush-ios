@@ -36,7 +36,7 @@ Additional scan context:
 ### Prerequisites
 
 - Git
-- macOS with Xcode for building Apple platform projects
+- macOS with Xcode 16.4 for building Apple platform projects
 - Python 3 for repository source checks
 
 ### Setup
@@ -56,8 +56,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - `make check` runs static project checks, timer lifecycle checks, hex color
   parser checks, and timer accessibility checks. When `xcodebuild` is
-  installed, the `build` target also attempts an iOS simulator build with code
-  signing disabled.
+  installed, the `build` target compiles the app and XCTest target for the iOS
+  simulator with code signing disabled. The project uses Swift 5 and an iOS 12
+  deployment target.
 - Timer lifecycle checks also require teardown to invalidate timers and remove
   the custom navigation logo view. They also require view appearance to
   reattach the logo and view disappearance to stop an active timer through the
@@ -68,11 +69,12 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   also require layout passes to recenter the custom logo.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
-  destination can be used on macOS for deeper verification.
-- GitHub Actions runs the same Python static `make check` baseline on Ubuntu
-  for pushes, pull requests, and manual runs. The workflow has read-only
-  repository permissions, a five-minute timeout, and commit-pinned Node 24
-  actions. Full simulator and device verification remains a macOS Xcode task.
+  destination can execute the color-parser XCTest assertions on macOS.
+- GitHub Actions runs the Python static `make check` baseline on Ubuntu 24.04
+  and compiles the app plus XCTest target with Xcode 16.4 on macOS 15. The
+  workflow has read-only repository permissions, bounded jobs, concurrency
+  cancellation, and commit-pinned Node 24 actions. Runtime UI verification
+  still requires a simulator or device.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -87,9 +89,11 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 ## Maintenance Notes
 
-- This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
+- The checked-in baseline is Swift 5, Xcode 16.4, and iOS 12 or newer.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
+- See `docs/plans/2026-06-10-swift-5-xcode-build.md` for the modern Xcode build
+  baseline.
 - See `docs/plans/2026-06-08-toothbrush-ios-baseline.md` for the canonical
   timer and color validation baseline.
 - See `docs/plans/2026-06-08-timer-accessibility.md` for timer accessibility

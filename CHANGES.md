@@ -2,6 +2,14 @@
 
 ## 2026-06-10
 
+- Migrated the app and test target from Swift 2-era UIKit APIs to Swift 5 and
+  raised the deployment target from iOS 8.3 to iOS 12.
+- Replaced placeholder XCTest coverage with real valid and invalid hex-color
+  parser assertions.
+- Added a macOS 15/Xcode 16.4 CI job that compiles the app and XCTest target,
+  while fixing the portable job to Ubuntu 24.04 with concurrency cancellation.
+- Made Makefile verification independent of the caller's working directory and
+  extended static contracts for the modern project and hosted build.
 - Added a least-privilege GitHub Actions workflow that runs the SDK-free
   `make check` baseline with commit-pinned Node 24 actions and a bounded
   runtime.

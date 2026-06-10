@@ -8,29 +8,24 @@
 
 import UIKit
 import XCTest
+@testable import toothbrush
 
-class toothbrushTests: XCTestCase {
-    
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+final class ToothbrushTests: XCTestCase {
+    func testHexColorParsesTrimmedHashValue() {
+        let color = toColor("  #EA0796\n")
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+
+        XCTAssertTrue(color.getRed(&red, green: &green, blue: &blue, alpha: &alpha))
+        XCTAssertEqual(red, 234.0 / 255.0, accuracy: 0.001)
+        XCTAssertEqual(green, 7.0 / 255.0, accuracy: 0.001)
+        XCTAssertEqual(blue, 150.0 / 255.0, accuracy: 0.001)
+        XCTAssertEqual(alpha, 1.0, accuracy: 0.001)
     }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
+
+    func testHexColorRejectsPartialInput() {
+        XCTAssertEqual(toColor("EA0796suffix"), UIColor.gray)
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        XCTAssert(true, "Pass")
-    }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measureBlock() {
-            // Put the code you want to measure the time of here.
-        }
-    }
-    
 }

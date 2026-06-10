@@ -5,25 +5,24 @@
 import Foundation
 import UIKit
 
-// Converts a hex string into a UIColor
-//
-func toColor (hex:String) -> UIColor {
-    var cString:String = hex.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet() as NSCharacterSet).uppercaseString
-    
-    if (cString.hasPrefix("#")) {
-        cString = cString.substringFromIndex(cString.startIndex.advancedBy(1))
+// Converts a hex string into a UIColor.
+func toColor(_ hex: String) -> UIColor {
+    var cString = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+
+    if cString.hasPrefix("#") {
+        cString.removeFirst()
     }
-    
-    if (cString.characters.count != 6) {
-        return UIColor.grayColor()
+
+    if cString.count != 6 {
+        return UIColor.gray
     }
-    
-    var rgbValue:UInt32 = 0
-    let scanner = NSScanner(string: cString)
-    if (!scanner.scanHexInt(&rgbValue) || scanner.scanLocation != cString.characters.count) {
-        return UIColor.grayColor()
+
+    var rgbValue: UInt64 = 0
+    let scanner = Scanner(string: cString)
+    if !scanner.scanHexInt64(&rgbValue) || !scanner.isAtEnd {
+        return UIColor.gray
     }
-    
+
     return UIColor(
         red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
         green: CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0,
