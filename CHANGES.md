@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-10
+
+- Added a least-privilege GitHub Actions workflow that runs the SDK-free
+  `make check` baseline with commit-pinned Node 24 actions and a bounded
+  runtime.
+
 ## 2026-06-09
 
 - Recentered the custom navigation logo during layout passes and extended
