@@ -67,6 +67,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   visibility state in sync. The repeating countdown timer must also set a small
   scheduling tolerance and run in common run-loop modes. Navigation logo checks
   also require layout passes to recenter the custom logo.
+- Countdown values are derived from a two-minute deadline rather than callback
+  count, with XCTest coverage for delayed callbacks and expired deadlines.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can execute the color-parser XCTest assertions on macOS.
@@ -116,6 +118,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   logo layout guard.
 - See `docs/plans/2026-06-10-ci-baseline.md` for the GitHub Actions static
   contract gate.
+- See `docs/plans/2026-06-10-deadline-countdown.md` for real-time countdown
+  calculation and delayed-tick XCTest coverage.
 
 ## Contributing
 

@@ -34,6 +34,8 @@ Helpful reports include:
   commit-pinned Node 24 actions. Do not add health data collection, analytics,
   deployment, or credentialed service steps without a separate privacy and
   security review.
+- The local brushing timer uses only an in-memory deadline and does not persist
+  or transmit habit, health, or device activity data.
 
 ## Mobile Privacy Notes
 

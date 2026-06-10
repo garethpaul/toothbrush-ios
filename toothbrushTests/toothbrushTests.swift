@@ -28,4 +28,19 @@ final class ToothbrushTests: XCTestCase {
     func testHexColorRejectsPartialInput() {
         XCTAssertEqual(toColor("EA0796suffix"), UIColor.gray)
     }
+
+    func testRemainingSecondsUsesDeadlineInsteadOfTickCount() {
+        let start = Date(timeIntervalSince1970: 1_000)
+        let deadline = start.addingTimeInterval(120)
+
+        XCTAssertEqual(remainingWholeSeconds(until: deadline, now: start), 120)
+        XCTAssertEqual(
+            remainingWholeSeconds(until: deadline, now: start.addingTimeInterval(1.1)),
+            119
+        )
+        XCTAssertEqual(
+            remainingWholeSeconds(until: deadline, now: start.addingTimeInterval(120.1)),
+            0
+        )
+    }
 }

@@ -21,6 +21,7 @@ Priority:
 - Keep prompt animation state deterministic after shared timer resets
 - Keep repeating countdown timers tolerant enough for efficient scheduling
 - Keep countdown ticks active during normal UI tracking interactions
+- Keep the two-minute interval accurate when timer callbacks are delayed
 - Keep custom navigation views tied to controller appearance, disappearance,
   and teardown
 - Keep the custom navigation logo centered after layout changes

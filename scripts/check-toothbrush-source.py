@@ -13,6 +13,7 @@ TIMER_RUN_LOOP_PLAN = DOCS_PLANS / "2026-06-09-timer-run-loop-modes.md"
 NAVIGATION_LOGO_LAYOUT_PLAN = DOCS_PLANS / "2026-06-09-navigation-logo-layout.md"
 CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
 MODERNIZATION_PLAN = DOCS_PLANS / "2026-06-10-swift-5-xcode-build.md"
+DEADLINE_TIMER_PLAN = DOCS_PLANS / "2026-06-10-deadline-countdown.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
 
 
@@ -50,6 +51,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-10-ci-baseline.md is missing")
     if not MODERNIZATION_PLAN.exists():
         errors.append("docs/plans/2026-06-10-swift-5-xcode-build.md is missing")
+    if not DEADLINE_TIMER_PLAN.exists():
+        errors.append("docs/plans/2026-06-10-deadline-countdown.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
 
@@ -157,6 +160,7 @@ def project_checks():
         "@testable import toothbrush",
         "testHexColorParsesTrimmedHashValue",
         "testHexColorRejectsPartialInput",
+        "testRemainingSecondsUsesDeadlineInsteadOfTickCount",
     ):
         if fragment not in tests:
             errors.append(f"XCTest coverage is missing: {fragment}")
@@ -187,6 +191,8 @@ def timer_checks():
     deinit_body = deinit.group("body") if deinit else ""
     if "timer?.invalidate()" not in setup_body:
         errors.append("setupTimer must invalidate any existing timer before scheduling")
+    if "timerEndDate = Date().addingTimeInterval(TimeInterval(second))" not in setup_body:
+        errors.append("setupTimer must establish a real-time countdown deadline")
     if "timer?.tolerance = 0.1" not in setup_body:
         errors.append("setupTimer must set a small tolerance on the repeating timer")
     if "RunLoop.main.add(timer, forMode: .common)" not in setup_body:
@@ -197,6 +203,10 @@ def timer_checks():
         errors.append("countdown completion must use second <= 0")
     if "stopTimerAndResetPrompt()" not in subtract_body:
         errors.append("countdown completion must stop the timer through the shared reset path")
+    if "second -= 1" in subtract_body:
+        errors.append("countdown ticks must not assume every timer callback is exactly one second apart")
+    if "second = remainingWholeSeconds(until: timerEndDate)" not in subtract_body:
+        errors.append("countdown ticks must derive remaining time from the deadline")
     if "stopTimerAndResetPrompt()" not in disappear_body:
         errors.append("view disappearance must stop the timer through the shared reset path")
     if "showNavigationLogo()" not in appear_body:
@@ -210,6 +220,7 @@ def timer_checks():
     for fragment in (
         "timer?.invalidate()",
         "timer = nil",
+        "timerEndDate = nil",
         "second = 0",
         "updateTimerLabel()",
         "brushText.layer.removeAllAnimations()",
@@ -239,6 +250,12 @@ def timer_checks():
             errors.append(f"navigation logo lifecycle is missing: {fragment}")
     if source.count("updateNavigationLogoFrame()") < 4:
         errors.append("navigation logo frame must be refreshed during setup, layout, and reattachment")
+    for fragment in (
+        "func remainingWholeSeconds(until endDate: Date, now: Date = Date()) -> Int",
+        "max(0, Int(ceil(endDate.timeIntervalSince(now))))",
+    ):
+        if fragment not in source:
+            errors.append(f"deadline countdown helper is missing: {fragment}")
 
     return errors
 

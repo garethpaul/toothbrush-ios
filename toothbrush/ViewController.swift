@@ -8,6 +8,10 @@
 
 import UIKit
 
+func remainingWholeSeconds(until endDate: Date, now: Date = Date()) -> Int {
+    max(0, Int(ceil(endDate.timeIntervalSince(now))))
+}
+
 class ViewController: UIViewController {
 
     @IBAction func start(_ sender: Any) {
@@ -24,6 +28,7 @@ class ViewController: UIViewController {
     var second = 0
     var count = 0
     var logoView: UIImageView?
+    var timerEndDate: Date?
 
     deinit {
         timer?.invalidate()
@@ -58,6 +63,7 @@ class ViewController: UIViewController {
         timer?.invalidate()
         second = 120
         count = 0
+        timerEndDate = Date().addingTimeInterval(TimeInterval(second))
 
         updateTimerLabel()
 
@@ -80,11 +86,15 @@ class ViewController: UIViewController {
     }
 
     @objc func subtractTime() {
-        second -= 1
+        if let timerEndDate = timerEndDate {
+            second = remainingWholeSeconds(until: timerEndDate)
+        } else {
+            second = 0
+        }
 
         if second <= 0 {
-            second = 0
             stopTimerAndResetPrompt()
+            return
         }
 
         updateTimerLabel()
@@ -134,6 +144,7 @@ class ViewController: UIViewController {
     func stopTimerAndResetPrompt() {
         timer?.invalidate()
         timer = nil
+        timerEndDate = nil
         second = 0
         updateTimerLabel()
         brushText.layer.removeAllAnimations()

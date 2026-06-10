@@ -2,6 +2,8 @@
 
 ## 2026-06-10
 
+- Derived countdown values from a real-time deadline so delayed timer callbacks
+  do not stretch the two-minute brushing interval, with XCTest coverage.
 - Migrated the app and test target from Swift 2-era UIKit APIs to Swift 5 and
   raised the deployment target from iOS 8.3 to iOS 12.
 - Replaced placeholder XCTest coverage with real valid and invalid hex-color
