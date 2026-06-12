@@ -35,6 +35,8 @@ could therefore pass the hosted gate as long as the sources still compiled.
 - Mutations removing the test action, destination, testable target, or workflow
   command were rejected
 - `git diff --check`
-- Hosted Xcode 16.4 XCTest result: pending exact-head pull-request run
+- Hosted pull-request run 27421147329, job 81046767174: Xcode 16.4 executed
+  all 3 tests on the iPhone 16 Pro iOS 18.5 simulator with 0 failures and
+  reported `TEST SUCCEEDED`
 
 No signing credentials, network services, health data, or user data are used.
