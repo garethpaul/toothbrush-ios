@@ -2,6 +2,8 @@
 
 ## 2026-06-12
 
+- Replaced target-selector timer ownership with a weak block callback so the
+  repeating timer cannot retain its view controller.
 - Added a shared Xcode scheme and changed hosted macOS validation from
   compile-only coverage to executing all offline XCTest cases on a pinned
   iPhone simulator.
