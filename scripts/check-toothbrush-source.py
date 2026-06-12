@@ -14,7 +14,12 @@ NAVIGATION_LOGO_LAYOUT_PLAN = DOCS_PLANS / "2026-06-09-navigation-logo-layout.md
 CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
 MODERNIZATION_PLAN = DOCS_PLANS / "2026-06-10-swift-5-xcode-build.md"
 DEADLINE_TIMER_PLAN = DOCS_PLANS / "2026-06-10-deadline-countdown.md"
+HOSTED_XCTEST_PLAN = DOCS_PLANS / "2026-06-12-hosted-xctest.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
+SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
+CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
+SETUP_PYTHON_ACTION = "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405"
+ALLOWED_ACTIONS = {"actions/checkout", "actions/setup-python"}
 
 
 def read_text(relative_path):
@@ -53,8 +58,12 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-10-swift-5-xcode-build.md is missing")
     if not DEADLINE_TIMER_PLAN.exists():
         errors.append("docs/plans/2026-06-10-deadline-countdown.md is missing")
+    if not HOSTED_XCTEST_PLAN.exists():
+        errors.append("docs/plans/2026-06-12-hosted-xctest.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
+    if not SHARED_SCHEME.exists():
+        errors.append("toothbrush.xcodeproj must include the shared toothbrush test scheme")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -85,18 +94,37 @@ def project_checks():
         "timeout-minutes: 5",
         "timeout-minutes: 15",
         "DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer",
-        "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3",
-        "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0",
+        f"{CHECKOUT_ACTION} # v6.0.3",
+        f"{SETUP_PYTHON_ACTION} # v6.2.0",
+        "persist-credentials: false",
         'python-version: "3.12"',
         "run: make check",
-        "run: make build",
+        "- name: Run XCTest",
+        "run: make test",
     ):
         if fragment not in workflow:
             errors.append(f"GitHub Actions workflow is missing expected setting: {fragment}")
+    if workflow.count(f"uses: {CHECKOUT_ACTION}") != 2:
+        errors.append("GitHub Actions workflow must use the approved checkout action twice")
+    if workflow.count(f"uses: {SETUP_PYTHON_ACTION}") != 1:
+        errors.append("GitHub Actions workflow must use the approved Python setup action once")
+    if workflow.count("persist-credentials: false") != 2:
+        errors.append("GitHub Actions checkout steps must not persist credentials")
+    if not re.search(r"(?m)^permissions:\n  contents: read\n\nconcurrency:", workflow):
+        errors.append("GitHub Actions workflow must keep exact read-only top-level permissions")
+    if "pull_request_target:" in workflow:
+        errors.append("GitHub Actions workflow must not use pull_request_target")
+    for action, revision in re.findall(
+        r"^\s*(?:-\s*)?uses:\s*([^@\s]+)@([^\s#]+)", workflow, flags=re.MULTILINE
+    ):
+        if action not in ALLOWED_ACTIONS:
+            errors.append(f"GitHub Actions action {action} is not approved")
+        if not re.fullmatch(r"[a-f0-9]{40}", revision):
+            errors.append(f"GitHub Actions action {action} must be pinned to a full commit SHA")
 
-    docs = "\n".join(read_text(path) for path in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"))
-    if "GitHub Actions" not in docs:
-        errors.append("project docs must mention the GitHub Actions static baseline")
+    for docs_path in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
+        if "GitHub Actions" not in read_text(docs_path):
+            errors.append(f"{docs_path} must mention the GitHub Actions baseline")
 
     project = read_text("toothbrush.xcodeproj/project.pbxproj")
     for fragment in (
@@ -114,6 +142,9 @@ def project_checks():
     makefile = read_text("Makefile")
     for fragment in (
         "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        "-scheme toothbrush",
+        "-destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'",
+        "CODE_SIGNING_ALLOWED=NO test",
         "-target toothbrushTests",
         "-sdk iphonesimulator",
         "CODE_SIGNING_ALLOWED=NO",
@@ -122,6 +153,19 @@ def project_checks():
     ):
         if fragment not in makefile:
             errors.append(f"Makefile is missing expected build setting: {fragment}")
+
+    scheme = SHARED_SCHEME.read_text(encoding="utf-8")
+    for fragment in (
+        'BlueprintIdentifier = "7F2D998C1B10E62F00668E52"',
+        '<TestableReference',
+        'skipped = "NO"',
+    ):
+        if fragment not in scheme:
+            errors.append(f"shared XCTest scheme is missing: {fragment}")
+    if scheme.count('BlueprintIdentifier = "7F2D99A11B10E62F00668E52"') != 2:
+        errors.append("shared XCTest scheme must reference the test target in build and test actions")
+    if scheme.count('BuildableName = "toothbrushTests.xctest"') != 2:
+        errors.append("shared XCTest scheme must build and execute the test bundle")
 
     app_delegate = read_text("toothbrush/AppDelegate.swift")
     if "@main" not in app_delegate or "UIApplication.LaunchOptionsKey" not in app_delegate:

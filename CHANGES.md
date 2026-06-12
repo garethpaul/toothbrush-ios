@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-12
+
+- Added a shared Xcode scheme and changed hosted macOS validation from
+  compile-only coverage to executing all offline XCTest cases on a pinned
+  iPhone simulator.
+
 ## 2026-06-10
 
 - Derived countdown values from a real-time deadline so delayed timer callbacks
@@ -16,7 +22,7 @@
   extended static contracts for the modern project and hosted build.
 - Added a least-privilege GitHub Actions workflow that runs the SDK-free
   `make check` baseline with commit-pinned Node 24 actions and a bounded
-  runtime.
+  runtime, read-only permissions, and credential-free checkout.
 
 ## 2026-06-09
 
