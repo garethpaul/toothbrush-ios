@@ -27,6 +27,7 @@ Priority:
 - Stop active countdown timers when the view leaves screen
 - Maintain the app GIF as behavior context
 - Keep completed maintenance plans under `docs/plans`
+- Keep GitHub Actions aligned with the SDK-free `make check` baseline
 - Treat Swift and Xcode versions as legacy until documented
 
 Next priorities:

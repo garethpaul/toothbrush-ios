@@ -11,6 +11,8 @@ CANONICAL_PLAN = DOCS_PLANS / "2026-06-08-toothbrush-ios-baseline.md"
 NAVIGATION_LOGO_LIFECYCLE_PLAN = DOCS_PLANS / "2026-06-09-navigation-logo-lifecycle.md"
 TIMER_RUN_LOOP_PLAN = DOCS_PLANS / "2026-06-09-timer-run-loop-modes.md"
 NAVIGATION_LOGO_LAYOUT_PLAN = DOCS_PLANS / "2026-06-09-navigation-logo-layout.md"
+CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
+CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
 
 
 def read_text(relative_path):
@@ -41,6 +43,10 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-09-timer-run-loop-modes.md is missing")
     if not NAVIGATION_LOGO_LAYOUT_PLAN.exists():
         errors.append("docs/plans/2026-06-09-navigation-logo-layout.md is missing")
+    if not CI_PLAN.exists():
+        errors.append("docs/plans/2026-06-10-ci-baseline.md is missing")
+    if not CI_WORKFLOW.exists():
+        errors.append(".github/workflows/check.yml is missing")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -58,6 +64,19 @@ def project_checks():
     errors = docs_plan_checks() + require_paths()
     if errors:
         return errors
+
+    workflow = read_text(".github/workflows/check.yml")
+    for fragment in (
+        "actions/setup-python@v5",
+        'python-version: "3.12"',
+        "make check",
+    ):
+        if fragment not in workflow:
+            errors.append(f"GitHub Actions workflow is missing expected setting: {fragment}")
+
+    docs = "\n".join(read_text(path) for path in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"))
+    if "GitHub Actions" not in docs:
+        errors.append("project docs must mention the GitHub Actions static baseline")
 
     project = read_text("toothbrush.xcodeproj/project.pbxproj")
     for fragment in (

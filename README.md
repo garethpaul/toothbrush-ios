@@ -74,6 +74,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Static project checks also require completed canonical plans under `docs/plans`.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and
   destination can be used on macOS for deeper verification.
+GitHub Actions runs the same Python static `make check` baseline on Ubuntu for
+pushes and pull requests. Full simulator and device verification remains a
+macOS Xcode task.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -111,6 +114,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   logo appearance/disappearance guard.
 - See `docs/plans/2026-06-09-navigation-logo-layout.md` for the navigation
   logo layout guard.
+- See `docs/plans/2026-06-10-ci-baseline.md` for the GitHub Actions static
+  baseline.
 
 ## Contributing
 
