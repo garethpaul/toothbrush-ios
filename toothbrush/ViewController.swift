@@ -67,13 +67,9 @@ class ViewController: UIViewController {
 
         updateTimerLabel()
 
-        timer = Timer.scheduledTimer(
-            timeInterval: 1.0,
-            target: self,
-            selector: #selector(subtractTime),
-            userInfo: nil,
-            repeats: true
-        )
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.subtractTime()
+        }
         timer?.tolerance = 0.1
         if let timer = timer {
             RunLoop.main.add(timer, forMode: .common)

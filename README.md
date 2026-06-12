@@ -71,8 +71,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   shared reset path while removing the logo. The reset path must zero the
   countdown while keeping the timer label, accessibility value, and prompt
   visibility state in sync. The repeating countdown timer must also set a small
-  scheduling tolerance and run in common run-loop modes. Navigation logo checks
-  also require layout passes to recenter the custom logo.
+  scheduling tolerance, run in common run-loop modes, and capture the controller
+  weakly so timer ownership cannot keep a departed screen alive. Navigation
+  logo checks also require layout passes to recenter the custom logo.
 - Countdown values are derived from a two-minute deadline rather than callback
   count, with XCTest coverage for delayed callbacks and expired deadlines.
 - Static project checks also require completed canonical plans under `docs/plans`.
@@ -128,6 +129,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   calculation and delayed-tick XCTest coverage.
 - See `docs/plans/2026-06-12-hosted-xctest.md` for the shared scheme and hosted
   simulator test gate.
+- See `docs/plans/2026-06-12-weak-timer-ownership.md` for weak callback capture
+  that prevents the repeating timer from retaining its controller.
 
 ## Contributing
 

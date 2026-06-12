@@ -37,6 +37,8 @@ Helpful reports include:
   separate privacy and security review.
 - The local brushing timer uses only an in-memory deadline and does not persist
   or transmit habit, health, or device activity data.
+- The repeating timer captures its controller weakly so missed lifecycle cleanup
+  cannot keep the screen and its UI state alive through a target-retain cycle.
 
 ## Mobile Privacy Notes
 

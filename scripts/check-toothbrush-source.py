@@ -15,6 +15,7 @@ CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
 MODERNIZATION_PLAN = DOCS_PLANS / "2026-06-10-swift-5-xcode-build.md"
 DEADLINE_TIMER_PLAN = DOCS_PLANS / "2026-06-10-deadline-countdown.md"
 HOSTED_XCTEST_PLAN = DOCS_PLANS / "2026-06-12-hosted-xctest.md"
+WEAK_TIMER_PLAN = DOCS_PLANS / "2026-06-12-weak-timer-ownership.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
 SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -60,6 +61,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-10-deadline-countdown.md is missing")
     if not HOSTED_XCTEST_PLAN.exists():
         errors.append("docs/plans/2026-06-12-hosted-xctest.md is missing")
+    if not WEAK_TIMER_PLAN.exists():
+        errors.append("docs/plans/2026-06-12-weak-timer-ownership.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
     if not SHARED_SCHEME.exists():
@@ -241,6 +244,14 @@ def timer_checks():
         errors.append("setupTimer must set a small tolerance on the repeating timer")
     if "RunLoop.main.add(timer, forMode: .common)" not in setup_body:
         errors.append("setupTimer must add the countdown timer to common run-loop modes")
+    if "Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true)" not in setup_body:
+        errors.append("setupTimer must use the block-based repeating timer API")
+    if "{ [weak self] _ in" not in setup_body:
+        errors.append("setupTimer must not retain the controller through its timer callback")
+    if "self?.subtractTime()" not in setup_body:
+        errors.append("the weak timer callback must forward ticks to subtractTime")
+    if "target: self" in setup_body or "selector: #selector(subtractTime)" in setup_body:
+        errors.append("setupTimer must not use the retaining target-selector timer API")
     if "if second == 0" in source:
         errors.append("countdown completion must handle zero and negative values")
     if "if second <= 0" not in source:
