@@ -14,7 +14,9 @@ NAVIGATION_LOGO_LAYOUT_PLAN = DOCS_PLANS / "2026-06-09-navigation-logo-layout.md
 CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
 MODERNIZATION_PLAN = DOCS_PLANS / "2026-06-10-swift-5-xcode-build.md"
 DEADLINE_TIMER_PLAN = DOCS_PLANS / "2026-06-10-deadline-countdown.md"
+HOSTED_XCTEST_PLAN = DOCS_PLANS / "2026-06-12-hosted-xctest.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
+SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
 SETUP_PYTHON_ACTION = "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405"
 ALLOWED_ACTIONS = {"actions/checkout", "actions/setup-python"}
@@ -56,8 +58,12 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-10-swift-5-xcode-build.md is missing")
     if not DEADLINE_TIMER_PLAN.exists():
         errors.append("docs/plans/2026-06-10-deadline-countdown.md is missing")
+    if not HOSTED_XCTEST_PLAN.exists():
+        errors.append("docs/plans/2026-06-12-hosted-xctest.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
+    if not SHARED_SCHEME.exists():
+        errors.append("toothbrush.xcodeproj must include the shared toothbrush test scheme")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -93,7 +99,8 @@ def project_checks():
         "persist-credentials: false",
         'python-version: "3.12"',
         "run: make check",
-        "run: make build",
+        "- name: Run XCTest",
+        "run: make test",
     ):
         if fragment not in workflow:
             errors.append(f"GitHub Actions workflow is missing expected setting: {fragment}")
@@ -135,6 +142,9 @@ def project_checks():
     makefile = read_text("Makefile")
     for fragment in (
         "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        "-scheme toothbrush",
+        "-destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'",
+        "CODE_SIGNING_ALLOWED=NO test",
         "-target toothbrushTests",
         "-sdk iphonesimulator",
         "CODE_SIGNING_ALLOWED=NO",
@@ -143,6 +153,19 @@ def project_checks():
     ):
         if fragment not in makefile:
             errors.append(f"Makefile is missing expected build setting: {fragment}")
+
+    scheme = SHARED_SCHEME.read_text(encoding="utf-8")
+    for fragment in (
+        'BlueprintIdentifier = "7F2D998C1B10E62F00668E52"',
+        '<TestableReference',
+        'skipped = "NO"',
+    ):
+        if fragment not in scheme:
+            errors.append(f"shared XCTest scheme is missing: {fragment}")
+    if scheme.count('BlueprintIdentifier = "7F2D99A11B10E62F00668E52"') != 2:
+        errors.append("shared XCTest scheme must reference the test target in build and test actions")
+    if scheme.count('BuildableName = "toothbrushTests.xctest"') != 2:
+        errors.append("shared XCTest scheme must build and execute the test bundle")
 
     app_delegate = read_text("toothbrush/AppDelegate.swift")
     if "@main" not in app_delegate or "UIApplication.LaunchOptionsKey" not in app_delegate:

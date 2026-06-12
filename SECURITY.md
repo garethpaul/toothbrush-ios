@@ -28,8 +28,9 @@ Helpful reports include:
 - Review found network clients, sockets, web APIs, or service endpoints; changes in those areas should receive security-focused review before merge.
 - Review found file, document, data, or media parsing flows; changes in those areas should receive security-focused review before merge.
 - No primary dependency manifest was detected in the repository root. If dependencies are added later, include a manifest and prefer reproducible installation instructions.
-- GitHub Actions runs the SDK-free `make check` baseline on Ubuntu 24.04 and a
-  Xcode 16.4 simulator compilation on macOS 15 with read-only repository
+- GitHub Actions runs the SDK-free `make check` baseline on Ubuntu 24.04 and
+  executes the offline XCTest suite on an Xcode 16.4 simulator on macOS 15
+  with read-only repository
   permissions, credential-free checkout, bounded jobs, concurrency
   cancellation, and commit-pinned Node 24 actions. Do not add health data
   collection, analytics, deployment, or credentialed service steps without a

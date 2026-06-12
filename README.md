@@ -61,9 +61,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - `make check` runs static project checks, timer lifecycle checks, hex color
   parser checks, and timer accessibility checks. When `xcodebuild` is
-  installed, the `build` target compiles the app and XCTest target for the iOS
-  simulator with code signing disabled. The project uses Swift 5 and an iOS 12
-  deployment target.
+  installed, the `test` target executes the shared XCTest scheme on an iPhone
+  16 Pro simulator and the `build` target compiles the app and XCTest target
+  with code signing disabled. The project uses Swift 5 and an iOS 12 deployment
+  target.
 - Timer lifecycle checks also require teardown to invalidate timers and remove
   the custom navigation logo view. They also require view appearance to
   reattach the logo and view disappearance to stop an active timer through the
@@ -75,10 +76,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Countdown values are derived from a two-minute deadline rather than callback
   count, with XCTest coverage for delayed callbacks and expired deadlines.
 - Static project checks also require completed canonical plans under `docs/plans`.
-- Xcode's test action or `xcodebuild test` with the appropriate scheme and
-  destination can execute the color-parser XCTest assertions on macOS.
+- The shared `toothbrush` scheme executes the color-parser and deadline XCTest
+  assertions on the pinned simulator destination.
 - GitHub Actions runs the Python static `make check` baseline on Ubuntu 24.04
-  and compiles the app plus XCTest target with Xcode 16.4 on macOS 15. The
+  and executes the XCTest target with Xcode 16.4 on macOS 15. The
   workflow has read-only repository permissions, bounded jobs, concurrency
   cancellation, credential-free checkout, and commit-pinned Node 24 actions.
   Runtime UI verification still requires a simulator or device.
@@ -125,6 +126,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   contract gate.
 - See `docs/plans/2026-06-10-deadline-countdown.md` for real-time countdown
   calculation and delayed-tick XCTest coverage.
+- See `docs/plans/2026-06-12-hosted-xctest.md` for the shared scheme and hosted
+  simulator test gate.
 
 ## Contributing
 

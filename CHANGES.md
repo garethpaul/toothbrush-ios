@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-12
+
+- Added a shared Xcode scheme and changed hosted macOS validation from
+  compile-only coverage to executing all offline XCTest cases on a pinned
+  iPhone simulator.
+
 ## 2026-06-10
 
 - Derived countdown values from a real-time deadline so delayed timer callbacks
