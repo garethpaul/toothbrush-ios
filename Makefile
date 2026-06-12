@@ -1,19 +1,20 @@
 .PHONY: build check lint test verify
 
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 PYTHON ?= python3
 XCODEBUILD ?= xcodebuild
 
 lint:
-	$(PYTHON) scripts/check-toothbrush-source.py --mode project
+	$(PYTHON) "$(ROOT)/scripts/check-toothbrush-source.py" --mode project
 
 test:
-	$(PYTHON) scripts/check-toothbrush-source.py --mode timer
-	$(PYTHON) scripts/check-toothbrush-source.py --mode color
-	$(PYTHON) scripts/check-toothbrush-source.py --mode accessibility
+	$(PYTHON) "$(ROOT)/scripts/check-toothbrush-source.py" --mode timer
+	$(PYTHON) "$(ROOT)/scripts/check-toothbrush-source.py" --mode color
+	$(PYTHON) "$(ROOT)/scripts/check-toothbrush-source.py" --mode accessibility
 
 build: lint
 	@if command -v "$(XCODEBUILD)" >/dev/null 2>&1; then \
-		"$(XCODEBUILD)" -project toothbrush.xcodeproj -target toothbrush -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build; \
+		"$(XCODEBUILD)" -project "$(ROOT)/toothbrush.xcodeproj" -target toothbrushTests -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES build; \
 	else \
 		echo "xcodebuild not found; static project checks completed"; \
 	fi

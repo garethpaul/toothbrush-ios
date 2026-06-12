@@ -21,20 +21,21 @@ Priority:
 - Keep prompt animation state deterministic after shared timer resets
 - Keep repeating countdown timers tolerant enough for efficient scheduling
 - Keep countdown ticks active during normal UI tracking interactions
+- Keep the two-minute interval accurate when timer callbacks are delayed
 - Keep custom navigation views tied to controller appearance, disappearance,
   and teardown
 - Keep the custom navigation logo centered after layout changes
 - Stop active countdown timers when the view leaves screen
 - Maintain the app GIF as behavior context
 - Keep completed maintenance plans under `docs/plans`
-- Keep GitHub Actions aligned with the SDK-free `make check` baseline
-- Treat Swift and Xcode versions as legacy until documented
+- Keep GitHub Actions aligned with both portable contracts and Xcode compilation
+- Keep the Swift 5, Xcode 16.4, and iOS 12 baseline explicit
+- Compile the app and XCTest target before merging
 
 Next priorities:
 
-- Add README setup notes for Xcode and simulator versions
 - Add a completion state that is testable without waiting two minutes
-- Modernize timer APIs and Swift syntax in a dedicated pass
+- Add a shared scheme for hosted XCTest execution
 - Add simulator-backed accessibility assertions when Xcode is available
 
 Contribution rules:

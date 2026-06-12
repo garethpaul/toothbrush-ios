@@ -2,8 +2,21 @@
 
 ## 2026-06-10
 
-- Added a GitHub Actions workflow that runs the SDK-free `make check` baseline
-  for the local brushing timer sample.
+- Derived countdown values from a real-time deadline so delayed timer callbacks
+  do not stretch the two-minute brushing interval, with XCTest coverage.
+- Migrated the app and test target from Swift 2-era UIKit APIs to Swift 5 and
+  raised the deployment target from iOS 8.3 to iOS 12.
+- Replaced placeholder XCTest coverage with real valid and invalid hex-color
+  parser assertions.
+- Added a macOS 15/Xcode 16.4 CI job that compiles the app and XCTest target,
+  while fixing the portable job to Ubuntu 24.04 with concurrency cancellation.
+- Completed the modern app icon catalog with 167-pixel iPad and 1024-pixel App
+  Store assets derived from the existing toothbrush artwork.
+- Made Makefile verification independent of the caller's working directory and
+  extended static contracts for the modern project and hosted build.
+- Added a least-privilege GitHub Actions workflow that runs the SDK-free
+  `make check` baseline with commit-pinned Node 24 actions and a bounded
+  runtime, read-only permissions, and credential-free checkout.
 
 ## 2026-06-09
 

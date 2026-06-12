@@ -8,45 +8,48 @@
 
 import UIKit
 
+func remainingWholeSeconds(until endDate: Date, now: Date = Date()) -> Int {
+    max(0, Int(ceil(endDate.timeIntervalSince(now))))
+}
+
 class ViewController: UIViewController {
 
-    @IBAction func start(sender: AnyObject) {
+    @IBAction func start(_ sender: Any) {
         setupTimer()
-        brushBtn.hidden = true
-        brushText.hidden = false
+        brushBtn.isHidden = true
+        brushText.isHidden = false
     }
-    
+
     @IBOutlet weak var seconds: UILabel!
     @IBOutlet weak var brushBtn: UIButton!
     @IBOutlet weak var brushText: UILabel!
-    
-    var timer = NSTimer()
+
+    var timer: Timer?
     var second = 0
     var count = 0
-    var logoView: UIImageView!
+    var logoView: UIImageView?
+    var timerEndDate: Date?
 
     deinit {
-        timer.invalidate()
+        timer?.invalidate()
         removeNavigationLogo()
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        logoView = UIImageView(frame: CGRectMake(0, 0, 40, 40))
-        logoView.image = UIImage(named: "logo")?.imageWithRenderingMode(.AlwaysTemplate)
-        logoView.tintColor = toColor("#EA0796")
+
+        logoView = UIImageView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+        logoView?.image = UIImage(named: "logo")?.withRenderingMode(.alwaysTemplate)
+        logoView?.tintColor = toColor("#EA0796")
         updateNavigationLogoFrame()
-        
-        self.navigationController?.navigationBar.barTintColor = toColor("#F6EC28")
+
+        navigationController?.navigationBar.barTintColor = toColor("#F6EC28")
 
         showNavigationLogo()
         setupAccessibility()
-
-        // Do any additional setup after loading the view, typically from a nib.
     }
 
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         showNavigationLogo()
     }
@@ -56,43 +59,48 @@ class ViewController: UIViewController {
         updateNavigationLogoFrame()
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
-    func setupTimer()  {
-        timer.invalidate()
+    func setupTimer() {
+        timer?.invalidate()
         second = 120
         count = 0
+        timerEndDate = Date().addingTimeInterval(TimeInterval(second))
 
         updateTimerLabel()
-        
-        timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: Selector("subtractTime"), userInfo: nil, repeats: true)
-        timer.tolerance = 0.1
-        NSRunLoop.mainRunLoop().addTimer(timer, forMode: NSRunLoopCommonModes)
+
+        timer = Timer.scheduledTimer(
+            timeInterval: 1.0,
+            target: self,
+            selector: #selector(subtractTime),
+            userInfo: nil,
+            repeats: true
+        )
+        timer?.tolerance = 0.1
+        if let timer = timer {
+            RunLoop.main.add(timer, forMode: .common)
+        }
         brushText.layer.removeAllAnimations()
         brushText.alpha = 0
-        UIView.animateWithDuration(0.5, delay: 0.5, options: [UIViewAnimationOptions.Repeat, UIViewAnimationOptions.Autoreverse], animations: { () -> Void in
+        UIView.animate(withDuration: 0.5, delay: 0.5, options: [.repeat, .autoreverse], animations: {
             self.brushText.alpha = 1
         }, completion: nil)
-        
-        
-        
     }
 
-    func subtractTime() {
-        second--
-
-        if(second <= 0)  {
+    @objc func subtractTime() {
+        if let timerEndDate = timerEndDate {
+            second = remainingWholeSeconds(until: timerEndDate)
+        } else {
             second = 0
+        }
+
+        if second <= 0 {
             stopTimerAndResetPrompt()
+            return
         }
 
         updateTimerLabel()
     }
 
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         stopTimerAndResetPrompt()
         removeNavigationLogo()
@@ -102,15 +110,15 @@ class ViewController: UIViewController {
         if let logoView = logoView {
             updateNavigationLogoFrame()
             if logoView.superview == nil {
-                self.navigationController?.view.addSubview(logoView)
+                navigationController?.view.addSubview(logoView)
             }
-            self.navigationController?.view.bringSubviewToFront(logoView)
+            navigationController?.view.bringSubviewToFront(logoView)
         }
     }
 
     func updateNavigationLogoFrame() {
         if let logoView = logoView {
-            logoView.frame.origin.x = (self.view.frame.size.width - logoView.frame.size.width) / 2
+            logoView.frame.origin.x = (view.bounds.width - logoView.frame.width) / 2
             logoView.frame.origin.y = 20
         }
     }
@@ -134,13 +142,14 @@ class ViewController: UIViewController {
     }
 
     func stopTimerAndResetPrompt() {
-        timer.invalidate()
+        timer?.invalidate()
+        timer = nil
+        timerEndDate = nil
         second = 0
         updateTimerLabel()
         brushText.layer.removeAllAnimations()
         brushText.alpha = 0
-        brushBtn.hidden = false
-        brushText.hidden = true
+        brushBtn.isHidden = false
+        brushText.isHidden = true
     }
-
 }
