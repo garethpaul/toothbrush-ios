@@ -1,6 +1,6 @@
 # Foreground Countdown Reconciliation
 
-## Status: Planned
+## Status: Completed
 
 ## Context
 
@@ -62,3 +62,28 @@ plan status.
   declaration.
 - Do not claim physical-device background scheduling or sleep-transition
   validation from static checks or simulator XCTest.
+
+## Work Completed
+
+- Registered for application-active notifications after controller setup.
+- Reconciled only an active deadline through the existing `subtractTime()`
+  path, preserving countdown and accessibility synchronization.
+- Removed the matching notification observer during controller teardown.
+- Added fail-closed lifecycle and documentation contracts.
+
+## Verification
+
+- Focused timer and accessibility source contracts passed.
+- Full `make check` passed project, timer, color, and accessibility contracts
+  with the documented local no-Xcode fallbacks.
+- The same full gate passed from an external working directory.
+- Eight focused mutations covering registration, notification identity,
+  matching teardown, active-state guarding, shared reconciliation, duplicated
+  deadline math, documentation drift, and plan status were rejected.
+- Parsed 1 workflow YAML file, 3 plist/privacy files, 3 JSON files, and 4 scheme,
+  workspace, and SVG XML files; Python syntax, diff whitespace, generated-
+  artifact, and intended-diff secret audits passed.
+- Plan-aware lifecycle, correctness, accessibility, testing, and maintainability
+  review found no actionable findings. Browser testing is not applicable.
+- XcodeBuildMCP and local `xcodebuild` are unavailable; the exact-head hosted
+  Xcode 16.4 XCTest job is required native evidence.

@@ -41,6 +41,8 @@ Helpful reports include:
   privacy manifest declares system boot time reason `35F9.1` for this timer.
 - The repeating timer captures its controller weakly so missed lifecycle cleanup
   cannot keep the screen and its UI state alive through a target-retain cycle.
+- Foreground countdown reconciliation updates only an active in-memory deadline
+  and removes its application notification observer during controller teardown.
 
 ## Mobile Privacy Notes
 

@@ -17,6 +17,7 @@ DEADLINE_TIMER_PLAN = DOCS_PLANS / "2026-06-10-deadline-countdown.md"
 HOSTED_XCTEST_PLAN = DOCS_PLANS / "2026-06-12-hosted-xctest.md"
 WEAK_TIMER_PLAN = DOCS_PLANS / "2026-06-12-weak-timer-ownership.md"
 MONOTONIC_DEADLINE_PLAN = DOCS_PLANS / "2026-06-13-monotonic-countdown-deadline.md"
+FOREGROUND_RECONCILIATION_PLAN = DOCS_PLANS / "2026-06-13-foreground-countdown-reconciliation.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
 SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -67,6 +68,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-12-weak-timer-ownership.md is missing")
     if not MONOTONIC_DEADLINE_PLAN.exists():
         errors.append("docs/plans/2026-06-13-monotonic-countdown-deadline.md is missing")
+    if not FOREGROUND_RECONCILIATION_PLAN.exists():
+        errors.append("docs/plans/2026-06-13-foreground-countdown-reconciliation.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
     if not SHARED_SCHEME.exists():
@@ -80,6 +83,10 @@ def docs_plan_checks():
         plan = plan_path.read_text(encoding="utf-8")
         if "Status: Completed" not in plan or "make check" not in plan:
             errors.append(f"{plan_path.relative_to(ROOT)} must record completed status and make check verification")
+
+    for relative_path in ("README.md", "SECURITY.md", "VISION.md", "CHANGES.md"):
+        if "foreground countdown reconciliation" not in read_text(relative_path).lower():
+            errors.append(f"{relative_path} must document foreground countdown reconciliation")
 
     return errors
 
@@ -292,6 +299,37 @@ def timer_checks():
         errors.append("countdown ticks must derive remaining time from the deadline")
     if "stopTimerAndResetPrompt()" not in disappear_body:
         errors.append("view disappearance must stop the timer through the shared reset path")
+    activation_observer = (
+        "NotificationCenter.default.addObserver(\n"
+        "            self,\n"
+        "            selector: #selector(applicationDidBecomeActive(_:)),\n"
+        "            name: UIApplication.didBecomeActiveNotification,\n"
+        "            object: nil\n"
+        "        )"
+    )
+    if activation_observer not in source:
+        errors.append("countdown must observe application activation through its reconciliation handler")
+    activation_removal = (
+        "NotificationCenter.default.removeObserver(\n"
+        "            self,\n"
+        "            name: UIApplication.didBecomeActiveNotification,\n"
+        "            object: nil\n"
+        "        )"
+    )
+    if activation_removal not in deinit_body:
+        errors.append("controller teardown must remove the matching application activation observer")
+    active_handler = (
+        "@objc func applicationDidBecomeActive(_ notification: Notification) {\n"
+        "        guard timerEndTime != nil else {\n"
+        "            return\n"
+        "        }\n"
+        "        subtractTime()\n"
+        "    }"
+    )
+    if active_handler not in source:
+        errors.append("countdown application activation handler is missing")
+    if "func applicationDidBecomeActive" in source and "remainingWholeSeconds" in source[source.find("func applicationDidBecomeActive"):source.find("override func viewWillDisappear")]:
+        errors.append("application activation must not duplicate countdown arithmetic")
     if "showNavigationLogo()" not in appear_body:
         errors.append("view appearance must reattach the navigation logo")
     if "super.viewDidLayoutSubviews()" not in layout_body:

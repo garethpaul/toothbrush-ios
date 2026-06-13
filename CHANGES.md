@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Added foreground countdown reconciliation so an active timer refreshes
+  immediately when the application becomes active again.
 - Moved the brushing deadline from wall-clock `Date` values to a continuous
   monotonic clock so device clock adjustments and sleep cannot alter a running
   countdown, with required-reason privacy manifest coverage.

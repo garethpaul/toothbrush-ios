@@ -23,6 +23,7 @@ Priority:
 - Keep repeating countdown timers tolerant enough for efficient scheduling
 - Keep countdown ticks active during normal UI tracking interactions
 - Keep the two-minute interval accurate when timer callbacks are delayed
+- Keep foreground countdown reconciliation immediate after app activation
 - Keep repeating timer ownership from retaining a departed controller
 - Keep custom navigation views tied to controller appearance, disappearance,
   and teardown

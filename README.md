@@ -77,7 +77,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Countdown values are derived from a two-minute continuous monotonic deadline
   rather than callback count or the device wall clock, with XCTest coverage
   for delayed callbacks and expired deadlines. The clock includes device sleep,
-  and the bundled privacy manifest declares timer reason `35F9.1`.
+  and the bundled privacy manifest declares timer reason `35F9.1`. Foreground
+  countdown reconciliation immediately refreshes an active timer when the app
+  becomes active again.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - The shared `toothbrush` scheme executes the color-parser and deadline XCTest
   assertions on the pinned simulator destination.
@@ -131,6 +133,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   calculation and delayed-tick XCTest coverage.
 - See `docs/plans/2026-06-13-monotonic-countdown-deadline.md` for the
   wall-clock-independent countdown boundary.
+- See `docs/plans/2026-06-13-foreground-countdown-reconciliation.md` for the
+  foreground countdown reconciliation lifecycle contract.
 - See `docs/plans/2026-06-12-hosted-xctest.md` for the shared scheme and hosted
   simulator test gate.
 - See `docs/plans/2026-06-12-weak-timer-ownership.md` for weak callback capture

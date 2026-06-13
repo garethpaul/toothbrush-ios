@@ -47,6 +47,11 @@ class ViewController: UIViewController {
     var timerEndTime: TimeInterval?
 
     deinit {
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
         timer?.invalidate()
         removeNavigationLogo()
     }
@@ -63,6 +68,12 @@ class ViewController: UIViewController {
 
         showNavigationLogo()
         setupAccessibility()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationDidBecomeActive(_:)),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -110,6 +121,13 @@ class ViewController: UIViewController {
         }
 
         updateTimerLabel()
+    }
+
+    @objc func applicationDidBecomeActive(_ notification: Notification) {
+        guard timerEndTime != nil else {
+            return
+        }
+        subtractTime()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
