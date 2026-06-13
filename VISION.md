@@ -15,6 +15,7 @@ The current focus is:
 Priority:
 
 - Preserve the 120-second countdown flow
+- Keep elapsed countdown time independent of device wall-clock changes
 - Keep the start/reset visual state obvious
 - Keep timer accessibility labels and values synchronized with visible state
 - Keep shared timer resets synchronized with countdown state
