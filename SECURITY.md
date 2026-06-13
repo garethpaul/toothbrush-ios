@@ -35,8 +35,10 @@ Helpful reports include:
   cancellation, and commit-pinned Node 24 actions. Do not add health data
   collection, analytics, deployment, or credentialed service steps without a
   separate privacy and security review.
-- The local brushing timer uses only an in-memory deadline and does not persist
-  or transmit habit, health, or device activity data.
+- The local brushing timer uses only an in-memory continuous monotonic deadline,
+  includes device sleep, does not depend on wall-clock changes, and does not
+  persist or transmit habit, health, or device activity data. The bundled
+  privacy manifest declares system boot time reason `35F9.1` for this timer.
 - The repeating timer captures its controller weakly so missed lifecycle cleanup
   cannot keep the screen and its UI state alive through a target-retain cycle.
 

@@ -6,10 +6,26 @@
 //  Copyright (c) 2015 GarethPaul. All rights reserved.
 //
 
+import Darwin
 import UIKit
 
-func remainingWholeSeconds(until endDate: Date, now: Date = Date()) -> Int {
-    max(0, Int(ceil(endDate.timeIntervalSince(now))))
+private let continuousTimebase: mach_timebase_info_data_t = {
+    var info = mach_timebase_info_data_t()
+    mach_timebase_info(&info)
+    return info
+}()
+
+func continuousTime() -> TimeInterval {
+    let ticks = Double(mach_continuous_time())
+    let nanoseconds = ticks * Double(continuousTimebase.numer) / Double(continuousTimebase.denom)
+    return nanoseconds / 1_000_000_000
+}
+
+func remainingWholeSeconds(
+    until endTime: TimeInterval,
+    now: TimeInterval = continuousTime()
+) -> Int {
+    max(0, Int(ceil(endTime - now)))
 }
 
 class ViewController: UIViewController {
@@ -28,7 +44,7 @@ class ViewController: UIViewController {
     var second = 0
     var count = 0
     var logoView: UIImageView?
-    var timerEndDate: Date?
+    var timerEndTime: TimeInterval?
 
     deinit {
         timer?.invalidate()
@@ -63,7 +79,7 @@ class ViewController: UIViewController {
         timer?.invalidate()
         second = 120
         count = 0
-        timerEndDate = Date().addingTimeInterval(TimeInterval(second))
+        timerEndTime = continuousTime() + TimeInterval(second)
 
         updateTimerLabel()
 
@@ -82,8 +98,8 @@ class ViewController: UIViewController {
     }
 
     @objc func subtractTime() {
-        if let timerEndDate = timerEndDate {
-            second = remainingWholeSeconds(until: timerEndDate)
+        if let timerEndTime = timerEndTime {
+            second = remainingWholeSeconds(until: timerEndTime)
         } else {
             second = 0
         }
@@ -140,7 +156,7 @@ class ViewController: UIViewController {
     func stopTimerAndResetPrompt() {
         timer?.invalidate()
         timer = nil
-        timerEndDate = nil
+        timerEndTime = nil
         second = 0
         updateTimerLabel()
         brushText.layer.removeAllAnimations()

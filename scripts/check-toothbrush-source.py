@@ -16,6 +16,7 @@ MODERNIZATION_PLAN = DOCS_PLANS / "2026-06-10-swift-5-xcode-build.md"
 DEADLINE_TIMER_PLAN = DOCS_PLANS / "2026-06-10-deadline-countdown.md"
 HOSTED_XCTEST_PLAN = DOCS_PLANS / "2026-06-12-hosted-xctest.md"
 WEAK_TIMER_PLAN = DOCS_PLANS / "2026-06-12-weak-timer-ownership.md"
+MONOTONIC_DEADLINE_PLAN = DOCS_PLANS / "2026-06-13-monotonic-countdown-deadline.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
 SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -34,6 +35,7 @@ def require_paths():
         "toothbrush/ViewController.swift",
         "toothbrush/Hex.swift",
         "toothbrush/Info.plist",
+        "toothbrush/PrivacyInfo.xcprivacy",
         "toothbrushTests/toothbrushTests.swift",
         "toothbrush/Images.xcassets/AppIcon.appiconset/Icon-83.5@2x.png",
         "toothbrush/Images.xcassets/AppIcon.appiconset/Icon-AppStore-1024.png",
@@ -63,6 +65,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-12-hosted-xctest.md is missing")
     if not WEAK_TIMER_PLAN.exists():
         errors.append("docs/plans/2026-06-12-weak-timer-ownership.md is missing")
+    if not MONOTONIC_DEADLINE_PLAN.exists():
+        errors.append("docs/plans/2026-06-13-monotonic-countdown-deadline.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
     if not SHARED_SCHEME.exists():
@@ -128,6 +132,15 @@ def project_checks():
     for docs_path in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
         if "GitHub Actions" not in read_text(docs_path):
             errors.append(f"{docs_path} must mention the GitHub Actions baseline")
+    documentation_contracts = {
+        "README.md": "continuous monotonic deadline",
+        "SECURITY.md": "does not depend on wall-clock changes",
+        "VISION.md": "independent of device wall-clock changes",
+        "CHANGES.md": "required-reason privacy manifest coverage",
+    }
+    for docs_path, fragment in documentation_contracts.items():
+        if fragment not in read_text(docs_path):
+            errors.append(f"{docs_path} must document the monotonic countdown boundary")
 
     project = read_text("toothbrush.xcodeproj/project.pbxproj")
     for fragment in (
@@ -136,6 +149,7 @@ def project_checks():
         "SWIFT_VERSION = 5.0;",
         "PRODUCT_BUNDLE_IDENTIFIER = com.garethpaul.toothbrush;",
         "PRODUCT_BUNDLE_IDENTIFIER = com.garethpaul.toothbrushTests;",
+        "PrivacyInfo.xcprivacy in Resources",
     ):
         if fragment not in project:
             errors.append(f"project is missing expected setting: {fragment}")
@@ -195,6 +209,16 @@ def project_checks():
         errors.append("app plist must not require the obsolete armv7 capability")
     if "$(PRODUCT_BUNDLE_IDENTIFIER)" not in app_plist:
         errors.append("app plist must use the target product bundle identifier")
+    privacy_manifest = read_text("toothbrush/PrivacyInfo.xcprivacy")
+    for fragment in (
+        "NSPrivacyAccessedAPICategorySystemBootTime",
+        "35F9.1",
+        "<key>NSPrivacyTracking</key>",
+        "<false/>",
+        "<key>NSPrivacyCollectedDataTypes</key>",
+    ):
+        if fragment not in privacy_manifest:
+            errors.append(f"privacy manifest is missing timer disclosure: {fragment}")
 
     app_icons = read_text("toothbrush/Images.xcassets/AppIcon.appiconset/Contents.json")
     for filename in ("Icon-83.5@2x.png", "Icon-AppStore-1024.png"):
@@ -207,7 +231,11 @@ def project_checks():
         "@testable import toothbrush",
         "testHexColorParsesTrimmedHashValue",
         "testHexColorRejectsPartialInput",
-        "testRemainingSecondsUsesDeadlineInsteadOfTickCount",
+        "testRemainingSecondsUsesMonotonicDeadlineInsteadOfTickCount",
+        "let start: TimeInterval = 1_000",
+        "let deadline = start + 120",
+        "now: start + 1.1",
+        "now: start + 120.1",
     ):
         if fragment not in tests:
             errors.append(f"XCTest coverage is missing: {fragment}")
@@ -238,8 +266,8 @@ def timer_checks():
     deinit_body = deinit.group("body") if deinit else ""
     if "timer?.invalidate()" not in setup_body:
         errors.append("setupTimer must invalidate any existing timer before scheduling")
-    if "timerEndDate = Date().addingTimeInterval(TimeInterval(second))" not in setup_body:
-        errors.append("setupTimer must establish a real-time countdown deadline")
+    if "timerEndTime = continuousTime() + TimeInterval(second)" not in setup_body:
+        errors.append("setupTimer must establish a monotonic countdown deadline")
     if "timer?.tolerance = 0.1" not in setup_body:
         errors.append("setupTimer must set a small tolerance on the repeating timer")
     if "RunLoop.main.add(timer, forMode: .common)" not in setup_body:
@@ -260,7 +288,7 @@ def timer_checks():
         errors.append("countdown completion must stop the timer through the shared reset path")
     if "second -= 1" in subtract_body:
         errors.append("countdown ticks must not assume every timer callback is exactly one second apart")
-    if "second = remainingWholeSeconds(until: timerEndDate)" not in subtract_body:
+    if "second = remainingWholeSeconds(until: timerEndTime)" not in subtract_body:
         errors.append("countdown ticks must derive remaining time from the deadline")
     if "stopTimerAndResetPrompt()" not in disappear_body:
         errors.append("view disappearance must stop the timer through the shared reset path")
@@ -275,7 +303,7 @@ def timer_checks():
     for fragment in (
         "timer?.invalidate()",
         "timer = nil",
-        "timerEndDate = nil",
+        "timerEndTime = nil",
         "second = 0",
         "updateTimerLabel()",
         "brushText.layer.removeAllAnimations()",
@@ -306,11 +334,24 @@ def timer_checks():
     if source.count("updateNavigationLogoFrame()") < 4:
         errors.append("navigation logo frame must be refreshed during setup, layout, and reattachment")
     for fragment in (
-        "func remainingWholeSeconds(until endDate: Date, now: Date = Date()) -> Int",
-        "max(0, Int(ceil(endDate.timeIntervalSince(now))))",
+        "until endTime: TimeInterval",
+        "now: TimeInterval = continuousTime()",
+        "max(0, Int(ceil(endTime - now)))",
     ):
         if fragment not in source:
             errors.append(f"deadline countdown helper is missing: {fragment}")
+    for fragment in (
+        "import Darwin",
+        "mach_continuous_time()",
+        "mach_timebase_info(&info)",
+        "nanoseconds / 1_000_000_000",
+    ):
+        if fragment not in source:
+            errors.append(f"continuous sleep-aware clock is missing: {fragment}")
+    if "ProcessInfo.processInfo.systemUptime" in source:
+        errors.append("countdown must not use awake-only systemUptime")
+    if "timerEndDate" in source or "Date().addingTimeInterval" in source:
+        errors.append("countdown deadlines must not depend on the wall clock")
 
     return errors
 

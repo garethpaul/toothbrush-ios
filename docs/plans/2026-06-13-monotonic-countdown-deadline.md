@@ -1,6 +1,6 @@
 # Monotonic Countdown Deadline
 
-## Status: In Progress
+## Status: Completed
 
 ## Context
 
@@ -11,7 +11,8 @@ logic should use a monotonic clock instead of calendar time.
 
 ## Requirements
 
-- Base the two-minute deadline on `ProcessInfo.processInfo.systemUptime`.
+- Base the two-minute deadline on `mach_continuous_time`, which includes time
+  while the device is asleep.
 - Keep the remaining-seconds calculation pure and injectable for deterministic
   XCTest coverage.
 - Preserve rounding up partial seconds and clamping expired intervals to zero.
@@ -19,6 +20,8 @@ logic should use a monotonic clock instead of calendar time.
   animation reset, accessibility synchronization, and view teardown behavior.
 - Extend static contracts and hosted XCTest coverage for the monotonic boundary.
 - Document why wall-clock changes cannot alter a running session.
+- Bundle a privacy manifest declaring system boot time reason `35F9.1` for the
+  local timer calculation.
 
 ## Non-Goals
 
@@ -29,18 +32,25 @@ logic should use a monotonic clock instead of calendar time.
 
 ## Implementation
 
-1. Replace the stored `Date` deadline with a monotonic uptime deadline.
+1. Replace the stored `Date` deadline with a continuous monotonic deadline.
 2. Change the pure remaining-time helper and existing XCTest inputs to
    `TimeInterval` values.
 3. Extend the source checker, documentation, and negative mutation coverage.
 
 ## Verification
 
-- Run focused project and timer contracts.
-- Run local and external-directory `make check` with the truthful no-Xcode
-  fallback.
-- Parse project, plist, workflow, scheme, asset JSON, and SVG artifacts.
-- Reject hostile mutations for wall-clock use, uptime capture, helper math,
-  stored deadline reset, XCTest coverage, documentation, and plan completion.
-- Inspect the exact diff, ignored artifacts, secret patterns, and worktree.
-- Record bounded hosted Xcode/XCTest evidence at the exact pushed head.
+- Focused timer, color, and accessibility contracts passed, and the Python
+  checker compiled successfully.
+- Apple documentation review confirmed `systemUptime` is awake time and can
+  stop during sleep; the implementation instead uses the continuous Mach clock
+  and declares required-reason code `35F9.1` in `PrivacyInfo.xcprivacy`.
+- Local and external-directory `make check` passed project, timer, color, and
+  accessibility contracts with the truthful no-Xcode fallback.
+- App, test, and privacy plists; workflow YAML; scheme, workspace, and SVG XML;
+  asset JSON; PNG dimensions; and privacy resource linkage parsed successfully.
+- Twelve hostile mutations covering sleep-pausing and wall clocks, timebase
+  conversion, helper math, deadline reset, XCTest coverage, privacy reason and
+  resource linkage, documentation, and plan completion were rejected.
+- Exact diff, ignored-artifact, secret-pattern, and worktree audits passed; the
+  ignored Python bytecode cache was preserved and excluded from commit.
+- Bounded hosted Xcode/XCTest evidence is recorded at the exact pushed head.

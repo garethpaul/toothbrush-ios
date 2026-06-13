@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-13
+
+- Moved the brushing deadline from wall-clock `Date` values to a continuous
+  monotonic clock so device clock adjustments and sleep cannot alter a running
+  countdown, with required-reason privacy manifest coverage.
+
 ## 2026-06-12
 
 - Replaced target-selector timer ownership with a weak block callback so the
