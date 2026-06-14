@@ -18,6 +18,7 @@ HOSTED_XCTEST_PLAN = DOCS_PLANS / "2026-06-12-hosted-xctest.md"
 WEAK_TIMER_PLAN = DOCS_PLANS / "2026-06-12-weak-timer-ownership.md"
 MONOTONIC_DEADLINE_PLAN = DOCS_PLANS / "2026-06-13-monotonic-countdown-deadline.md"
 FOREGROUND_RECONCILIATION_PLAN = DOCS_PLANS / "2026-06-13-foreground-countdown-reconciliation.md"
+ROOT_OVERRIDE_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
 SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -70,6 +71,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-13-monotonic-countdown-deadline.md is missing")
     if not FOREGROUND_RECONCILIATION_PLAN.exists():
         errors.append("docs/plans/2026-06-13-foreground-countdown-reconciliation.md is missing")
+    if not ROOT_OVERRIDE_PLAN.exists():
+        errors.append("docs/plans/2026-06-14-make-root-override-protection.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
     if not SHARED_SCHEME.exists():
@@ -164,8 +167,24 @@ def project_checks():
         errors.append("project must not retain the unsupported iOS 8.3 deployment target")
 
     makefile = read_text("Makefile")
+    root_declaration = "override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))"
+    root_assignments = re.findall(r"^(?:override\s+)?ROOT\s*[:+?]?=", makefile, re.MULTILINE)
+    if len(root_assignments) != 1 or makefile.count(root_declaration) != 1:
+        errors.append("Makefile must contain exactly one protected repository-root declaration")
+    root_and_tool_block = "\n".join((
+        root_declaration,
+        "PYTHON ?= python3",
+        "XCODEBUILD ?= xcodebuild",
+    ))
+    if makefile.count(root_and_tool_block) != 1:
+        errors.append("Makefile must keep the protected root before tool overrides")
     for fragment in (
-        "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        ".PHONY: build check lint test verify",
+        "build: lint",
+        "verify: lint test build",
+        "check: verify",
+        '"$(ROOT)/scripts/check-toothbrush-source.py"',
+        '"$(ROOT)/toothbrush.xcodeproj"',
         "-scheme toothbrush",
         "-destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'",
         "CODE_SIGNING_ALLOWED=NO test",
@@ -177,6 +196,9 @@ def project_checks():
     ):
         if fragment not in makefile:
             errors.append(f"Makefile is missing expected build setting: {fragment}")
+
+    if "docs/plans/2026-06-14-make-root-override-protection.md" not in read_text("README.md"):
+        errors.append("README must index Make root override protection evidence")
 
     scheme = SHARED_SCHEME.read_text(encoding="utf-8")
     for fragment in (

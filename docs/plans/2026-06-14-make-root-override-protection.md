@@ -1,6 +1,6 @@
 # Make Root Override Protection
 
-## Status: Planned
+## Status: Completed
 
 ## Context
 
@@ -55,3 +55,27 @@ and this plan's completed evidence.
 
 This change does not alter Swift behavior, timer lifecycle, accessibility,
 project settings, schemes, assets, workflow policy, or deployment targets.
+
+## Work Completed
+
+- Marked the root-first repository path as an explicit GNU Make override.
+- Added exact declaration, ordering, alias, checker/Xcode-path, README, and plan
+  contracts to the project checker.
+- Preserved all timer, accessibility, Swift, project, scheme, workflow, asset,
+  and tool behavior.
+
+## Verification Results
+
+- `make check` passed project, timer, color, and accessibility contracts with
+  the documented static-only paths because local `xcodebuild` is unavailable.
+- All five aliases passed from repository and external working directories
+  under hostile environment and command-line `ROOT` assignments, for 20 cases.
+- Explicit Python and Xcode overrides remained effective.
+- Eight protected-declaration, duplicate protected/unprotected assignment,
+  placement, alias, path, README, and plan mutations were rejected.
+- Plan-aware correctness, accessibility, testing, maintainability,
+  reliability, Xcode/XCTest, and project-standards review found no actionable
+  findings.
+- Exact diff, protected Swift/project/scheme/workflow/asset path,
+  generated-artifact, high-confidence secret, and whitespace audits passed.
+- Hosted static-baseline and Xcode/XCTest jobs remain the native authority.
