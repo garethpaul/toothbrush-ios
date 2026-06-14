@@ -1,0 +1,42 @@
+# Testable Countdown Completion
+
+## Status: Planned
+
+## Context
+
+Countdown duration arithmetic is independently testable, but the controller
+still decides whether to keep running or enter its completed reset state inside
+the timer callback. Verifying that transition currently requires controller
+state or a live timer.
+
+## Priority
+
+Represent the deadline-derived running/completed decision as a pure value so
+XCTest can exercise the completion boundary immediately without waiting two
+minutes.
+
+## Requirements
+
+- Derive a running state with the remaining whole-second value while time
+  remains.
+- Derive a completed state at and beyond the deadline.
+- Route normal ticks and application-activation reconciliation through the
+  same state decision.
+- Preserve continuous-clock timing, shared completion reset, weak timer
+  ownership, accessibility synchronization, and the iOS 12 floor.
+- Add mutation-sensitive XCTest and static contracts plus maintained project
+  documentation.
+
+## Verification
+
+- focused countdown-state XCTest coverage
+- repository and external-directory `make check`
+- hostile running/completed boundary, controller-integration, test-contract,
+  documentation, and plan-status mutations
+- final generated-artifact, credential, exact-diff, and hosted Xcode audits
+
+## Scope Boundary
+
+This change does not shorten the two-minute brushing interval, persist timer
+state across process termination, add a new completion screen, or alter the
+existing prompt animation and reset presentation.
