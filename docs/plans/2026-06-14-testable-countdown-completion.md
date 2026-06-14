@@ -1,6 +1,6 @@
 # Testable Countdown Completion
 
-## Status: Planned
+## Status: Completed
 
 ## Context
 
@@ -29,11 +29,14 @@ minutes.
 
 ## Verification
 
-- focused countdown-state XCTest coverage
-- repository and external-directory `make check`
-- hostile running/completed boundary, controller-integration, test-contract,
-  documentation, and plan-status mutations
-- final generated-artifact, credential, exact-diff, and hosted Xcode audits
+- The focused countdown-state XCTest coverage passed its static suite contract;
+  native execution remains the hosted Xcode authority.
+- The repository and external-directory `make check` passed.
+- Seven hostile countdown-state mutations were rejected across the
+  running/completed boundary, controller integration, test contract,
+  documentation, and plan status.
+- Final generated-artifact, credential, and exact-diff audits passed. Hosted
+  Xcode/XCTest remains the native exact-head authority.
 
 ## Scope Boundary
 

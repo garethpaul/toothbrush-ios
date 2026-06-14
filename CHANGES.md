@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-14
+
+- Added a testable countdown completion state so running and completed
+  deadline transitions can be verified immediately without a live timer.
+
 ## 2026-06-13
 
 - Added foreground countdown reconciliation so an active timer refreshes

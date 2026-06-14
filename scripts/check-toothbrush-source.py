@@ -19,6 +19,7 @@ WEAK_TIMER_PLAN = DOCS_PLANS / "2026-06-12-weak-timer-ownership.md"
 MONOTONIC_DEADLINE_PLAN = DOCS_PLANS / "2026-06-13-monotonic-countdown-deadline.md"
 FOREGROUND_RECONCILIATION_PLAN = DOCS_PLANS / "2026-06-13-foreground-countdown-reconciliation.md"
 ROOT_OVERRIDE_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
+COUNTDOWN_COMPLETION_PLAN = DOCS_PLANS / "2026-06-14-testable-countdown-completion.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
 SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -73,6 +74,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-13-foreground-countdown-reconciliation.md is missing")
     if not ROOT_OVERRIDE_PLAN.exists():
         errors.append("docs/plans/2026-06-14-make-root-override-protection.md is missing")
+    if not COUNTDOWN_COMPLETION_PLAN.exists():
+        errors.append("docs/plans/2026-06-14-testable-countdown-completion.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
     if not SHARED_SCHEME.exists():
@@ -90,6 +93,18 @@ def docs_plan_checks():
     for relative_path in ("README.md", "SECURITY.md", "VISION.md", "CHANGES.md"):
         if "foreground countdown reconciliation" not in read_text(relative_path).lower():
             errors.append(f"{relative_path} must document foreground countdown reconciliation")
+        if "testable countdown completion" not in read_text(relative_path).lower():
+            errors.append(f"{relative_path} must document testable countdown completion")
+
+    if COUNTDOWN_COMPLETION_PLAN.exists():
+        completion_plan = COUNTDOWN_COMPLETION_PLAN.read_text(encoding="utf-8")
+        for fragment in (
+            "focused countdown-state XCTest coverage passed",
+            "repository and external-directory `make check` passed",
+            "hostile countdown-state mutations were rejected",
+        ):
+            if fragment not in completion_plan:
+                errors.append(f"countdown completion plan is missing verification evidence: {fragment}")
 
     return errors
 
@@ -265,6 +280,11 @@ def project_checks():
         "let deadline = start + 120",
         "now: start + 1.1",
         "now: start + 120.1",
+        "testCountdownStateMakesCompletionImmediatelyTestable",
+        ".running(seconds: 120)",
+        "countdownState(until: deadline, now: deadline - 0.1),\n            .running(seconds: 1)",
+        "countdownState(until: deadline, now: deadline),\n            .completed",
+        "countdownState(until: deadline, now: deadline + 1),\n            .completed",
     ):
         if fragment not in tests:
             errors.append(f"XCTest coverage is missing: {fragment}")
@@ -309,16 +329,29 @@ def timer_checks():
         errors.append("the weak timer callback must forward ticks to subtractTime")
     if "target: self" in setup_body or "selector: #selector(subtractTime)" in setup_body:
         errors.append("setupTimer must not use the retaining target-selector timer API")
-    if "if second == 0" in source:
-        errors.append("countdown completion must handle zero and negative values")
-    if "if second <= 0" not in source:
-        errors.append("countdown completion must use second <= 0")
+    for fragment in (
+        "enum CountdownState: Equatable",
+        "case running(seconds: Int)",
+        "case completed",
+        "func countdownState(",
+        "let remainingSeconds = remainingWholeSeconds(until: endTime, now: now)",
+        "remainingSeconds > 0 ? .running(seconds: remainingSeconds) : .completed",
+    ):
+        if fragment not in source:
+            errors.append(f"testable countdown state is missing: {fragment}")
+    if "switch countdownState(until: timerEndTime)" not in subtract_body:
+        errors.append("countdown ticks must use the testable countdown state")
+    for fragment in (
+        "case .running(let remainingSeconds):",
+        "second = remainingSeconds",
+        "case .completed:",
+    ):
+        if fragment not in subtract_body:
+            errors.append(f"countdown state integration is missing: {fragment}")
     if "stopTimerAndResetPrompt()" not in subtract_body:
         errors.append("countdown completion must stop the timer through the shared reset path")
     if "second -= 1" in subtract_body:
         errors.append("countdown ticks must not assume every timer callback is exactly one second apart")
-    if "second = remainingWholeSeconds(until: timerEndTime)" not in subtract_body:
-        errors.append("countdown ticks must derive remaining time from the deadline")
     if "stopTimerAndResetPrompt()" not in disappear_body:
         errors.append("view disappearance must stop the timer through the shared reset path")
     activation_observer = (

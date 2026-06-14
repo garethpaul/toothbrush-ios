@@ -43,6 +43,8 @@ Helpful reports include:
   cannot keep the screen and its UI state alive through a target-retain cycle.
 - Foreground countdown reconciliation updates only an active in-memory deadline
   and removes its application notification observer during controller teardown.
+- Testable countdown completion derives a local running/completed value from
+  that in-memory deadline without persisting or transmitting timer state.
 
 ## Mobile Privacy Notes
 

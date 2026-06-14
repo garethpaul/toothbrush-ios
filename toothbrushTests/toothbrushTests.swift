@@ -43,4 +43,26 @@ final class ToothbrushTests: XCTestCase {
             0
         )
     }
+
+    func testCountdownStateMakesCompletionImmediatelyTestable() {
+        let start: TimeInterval = 1_000
+        let deadline = start + 120
+
+        XCTAssertEqual(
+            countdownState(until: deadline, now: start),
+            .running(seconds: 120)
+        )
+        XCTAssertEqual(
+            countdownState(until: deadline, now: deadline - 0.1),
+            .running(seconds: 1)
+        )
+        XCTAssertEqual(
+            countdownState(until: deadline, now: deadline),
+            .completed
+        )
+        XCTAssertEqual(
+            countdownState(until: deadline, now: deadline + 1),
+            .completed
+        )
+    }
 }

@@ -79,7 +79,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   for delayed callbacks and expired deadlines. The clock includes device sleep,
   and the bundled privacy manifest declares timer reason `35F9.1`. Foreground
   countdown reconciliation immediately refreshes an active timer when the app
-  becomes active again.
+  becomes active again. A testable countdown completion state keeps running and
+  completed deadline behavior covered without waiting two minutes.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - The shared `toothbrush` scheme executes the color-parser and deadline XCTest
   assertions on the pinned simulator destination.
@@ -141,6 +142,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   that prevents the repeating timer from retaining its controller.
 - See `docs/plans/2026-06-14-make-root-override-protection.md` for authoritative
   repository-root selection across all Make aliases.
+- See `docs/plans/2026-06-14-testable-countdown-completion.md` for the pure
+  running/completed deadline boundary used by timer callbacks and XCTest.
 
 ## Contributing
 

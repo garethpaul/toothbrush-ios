@@ -37,7 +37,7 @@ Priority:
 
 Next priorities:
 
-- Add a completion state that is testable without waiting two minutes
+- Keep testable countdown completion independent of live timer delays
 - Expand simulator-backed timer and accessibility assertions
 
 Contribution rules:

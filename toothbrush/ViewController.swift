@@ -28,6 +28,19 @@ func remainingWholeSeconds(
     max(0, Int(ceil(endTime - now)))
 }
 
+enum CountdownState: Equatable {
+    case running(seconds: Int)
+    case completed
+}
+
+func countdownState(
+    until endTime: TimeInterval,
+    now: TimeInterval = continuousTime()
+) -> CountdownState {
+    let remainingSeconds = remainingWholeSeconds(until: endTime, now: now)
+    return remainingSeconds > 0 ? .running(seconds: remainingSeconds) : .completed
+}
+
 class ViewController: UIViewController {
 
     @IBAction func start(_ sender: Any) {
@@ -109,18 +122,18 @@ class ViewController: UIViewController {
     }
 
     @objc func subtractTime() {
-        if let timerEndTime = timerEndTime {
-            second = remainingWholeSeconds(until: timerEndTime)
-        } else {
-            second = 0
-        }
-
-        if second <= 0 {
+        guard let timerEndTime = timerEndTime else {
             stopTimerAndResetPrompt()
             return
         }
 
-        updateTimerLabel()
+        switch countdownState(until: timerEndTime) {
+        case .running(let remainingSeconds):
+            second = remainingSeconds
+            updateTimerLabel()
+        case .completed:
+            stopTimerAndResetPrompt()
+        }
     }
 
     @objc func applicationDidBecomeActive(_ notification: Notification) {
