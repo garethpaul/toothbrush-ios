@@ -38,6 +38,7 @@ Priority:
 Next priorities:
 
 - Keep testable countdown completion independent of live timer delays
+- Keep countdown label grammar correct for singular and plural values
 - Expand simulator-backed timer and accessibility assertions
 
 Contribution rules:

@@ -20,6 +20,7 @@ MONOTONIC_DEADLINE_PLAN = DOCS_PLANS / "2026-06-13-monotonic-countdown-deadline.
 FOREGROUND_RECONCILIATION_PLAN = DOCS_PLANS / "2026-06-13-foreground-countdown-reconciliation.md"
 ROOT_OVERRIDE_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
 COUNTDOWN_COMPLETION_PLAN = DOCS_PLANS / "2026-06-14-testable-countdown-completion.md"
+COUNTDOWN_LABEL_PLAN = DOCS_PLANS / "2026-06-14-countdown-label-grammar.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
 SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -76,6 +77,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-14-make-root-override-protection.md is missing")
     if not COUNTDOWN_COMPLETION_PLAN.exists():
         errors.append("docs/plans/2026-06-14-testable-countdown-completion.md is missing")
+    if not COUNTDOWN_LABEL_PLAN.exists():
+        errors.append("docs/plans/2026-06-14-countdown-label-grammar.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
     if not SHARED_SCHEME.exists():
@@ -95,6 +98,8 @@ def docs_plan_checks():
             errors.append(f"{relative_path} must document foreground countdown reconciliation")
         if "testable countdown completion" not in read_text(relative_path).lower():
             errors.append(f"{relative_path} must document testable countdown completion")
+        if "countdown label grammar" not in read_text(relative_path).lower():
+            errors.append(f"{relative_path} must document countdown label grammar")
 
     if COUNTDOWN_COMPLETION_PLAN.exists():
         completion_plan = COUNTDOWN_COMPLETION_PLAN.read_text(encoding="utf-8")
@@ -285,6 +290,10 @@ def project_checks():
         "countdownState(until: deadline, now: deadline - 0.1),\n            .running(seconds: 1)",
         "countdownState(until: deadline, now: deadline),\n            .completed",
         "countdownState(until: deadline, now: deadline + 1),\n            .completed",
+        "testCountdownLabelUsesSingularAndPluralGrammar",
+        'countdownLabelText(for: 0), "0 seconds"',
+        'countdownLabelText(for: 1), "1 second"',
+        'countdownLabelText(for: 120), "120 seconds"',
     ):
         if fragment not in tests:
             errors.append(f"XCTest coverage is missing: {fragment}")
@@ -341,6 +350,14 @@ def timer_checks():
             errors.append(f"testable countdown state is missing: {fragment}")
     if "switch countdownState(until: timerEndTime)" not in subtract_body:
         errors.append("countdown ticks must use the testable countdown state")
+    for fragment in (
+        "func countdownLabelText(for seconds: Int) -> String",
+        'seconds == 1 ? "second" : "seconds"',
+        'return "\\(seconds) \\(unit)"',
+        "let labelText = countdownLabelText(for: second)",
+    ):
+        if fragment not in source:
+            errors.append(f"countdown label grammar is missing: {fragment}")
     for fragment in (
         "case .running(let remainingSeconds):",
         "second = remainingSeconds",

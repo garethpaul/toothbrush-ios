@@ -1,6 +1,6 @@
 # Countdown Label Grammar
 
-## Status: Planned
+## Status: Completed
 
 ## Context
 
@@ -32,6 +32,18 @@ changing deadline arithmetic, timer lifecycle behavior, or reset semantics.
   accessibility synchronization, documentation, and plan status
 - Generated-artifact, credential-pattern, exact-diff, staged-path, and
   whitespace audits
+
+## Verification Results
+
+- The focused timer and accessibility contracts passed with singular, zero,
+  and larger plural XCTest assertions present in the shared test target.
+- Repository and external-directory `make check` passed project, timer, color,
+  accessibility, and static XCTest contracts.
+- Six hostile label mutations were rejected across singular selection, plural
+  selection, controller integration, accessibility synchronization,
+  maintained documentation, and completed-plan evidence.
+- Native XCTest remains assigned to the hosted Xcode 16.4 simulator because
+  `xcodebuild` is unavailable on the Linux workstation.
 
 ## Scope Boundary
 

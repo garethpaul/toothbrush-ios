@@ -65,4 +65,10 @@ final class ToothbrushTests: XCTestCase {
             .completed
         )
     }
+
+    func testCountdownLabelUsesSingularAndPluralGrammar() {
+        XCTAssertEqual(countdownLabelText(for: 0), "0 seconds")
+        XCTAssertEqual(countdownLabelText(for: 1), "1 second")
+        XCTAssertEqual(countdownLabelText(for: 120), "120 seconds")
+    }
 }

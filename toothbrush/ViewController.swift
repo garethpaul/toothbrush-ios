@@ -41,6 +41,11 @@ func countdownState(
     return remainingSeconds > 0 ? .running(seconds: remainingSeconds) : .completed
 }
 
+func countdownLabelText(for seconds: Int) -> String {
+    let unit = seconds == 1 ? "second" : "seconds"
+    return "\(seconds) \(unit)"
+}
+
 class ViewController: UIViewController {
 
     @IBAction func start(_ sender: Any) {
@@ -179,7 +184,7 @@ class ViewController: UIViewController {
     }
 
     func updateTimerLabel() {
-        let labelText = "\(second) seconds"
+        let labelText = countdownLabelText(for: second)
         seconds.text = labelText
         seconds.accessibilityValue = labelText
     }

@@ -2,6 +2,8 @@
 
 ## 2026-06-14
 
+- Corrected countdown label grammar so the final running value reads and is
+  announced as `1 second` instead of `1 seconds`.
 - Added a testable countdown completion state so running and completed
   deadline transitions can be verified immediately without a live timer.
 

@@ -45,6 +45,8 @@ Helpful reports include:
   and removes its application notification observer during controller teardown.
 - Testable countdown completion derives a local running/completed value from
   that in-memory deadline without persisting or transmitting timer state.
+- Countdown label grammar formats only the local remaining-second value and
+  keeps visible and accessibility text synchronized without new data handling.
 
 ## Mobile Privacy Notes
 
