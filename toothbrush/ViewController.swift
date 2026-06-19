@@ -25,7 +25,19 @@ func remainingWholeSeconds(
     until endTime: TimeInterval,
     now: TimeInterval = continuousTime()
 ) -> Int {
-    max(0, Int(ceil(endTime - now)))
+    guard endTime.isFinite, now.isFinite else {
+        return 0
+    }
+
+    let remaining = endTime - now
+    guard remaining > 0 else {
+        return 0
+    }
+    guard remaining < Double(Int.max) else {
+        return Int.max
+    }
+
+    return Int(ceil(remaining))
 }
 
 enum CountdownState: Equatable {
@@ -63,6 +75,7 @@ class ViewController: UIViewController {
     var count = 0
     var logoView: UIImageView?
     var timerEndTime: TimeInterval?
+    var timerGeneration: UInt = 0
 
     deinit {
         NotificationCenter.default.removeObserver(
@@ -106,6 +119,8 @@ class ViewController: UIViewController {
 
     func setupTimer() {
         timer?.invalidate()
+        timerGeneration &+= 1
+        let generation = timerGeneration
         second = 120
         count = 0
         timerEndTime = continuousTime() + TimeInterval(second)
@@ -113,7 +128,7 @@ class ViewController: UIViewController {
         updateTimerLabel()
 
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.subtractTime()
+            self?.timerDidFire(generation: generation)
         }
         timer?.tolerance = 0.1
         if let timer = timer {
@@ -127,12 +142,25 @@ class ViewController: UIViewController {
     }
 
     @objc func subtractTime() {
+        reconcileCountdown(now: continuousTime())
+    }
+
+    func timerDidFire(
+        generation: UInt,
+        now: TimeInterval = continuousTime()
+    ) {
+        guard generation == timerGeneration else {
+            return
+        }
+        reconcileCountdown(now: now)
+    }
+
+    private func reconcileCountdown(now: TimeInterval) {
         guard let timerEndTime = timerEndTime else {
-            stopTimerAndResetPrompt()
             return
         }
 
-        switch countdownState(until: timerEndTime) {
+        switch countdownState(until: timerEndTime, now: now) {
         case .running(let remainingSeconds):
             second = remainingSeconds
             updateTimerLabel()
@@ -192,6 +220,7 @@ class ViewController: UIViewController {
     func stopTimerAndResetPrompt() {
         timer?.invalidate()
         timer = nil
+        timerGeneration &+= 1
         timerEndTime = nil
         second = 0
         updateTimerLabel()

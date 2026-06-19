@@ -1,5 +1,16 @@
 # Changes
 
+## 2026-06-19
+
+- Clamped invalid and unrepresentable countdown intervals so deadline
+  reconciliation cannot trap while converting extreme `TimeInterval` values.
+- Added per-run timer generations so callbacks from cancelled or restarted
+  countdowns cannot mutate the current run.
+- Made inactive countdown reconciliation a no-op, preserving exactly-once
+  completion reset behavior across timer and application-activation callbacks.
+- Expanded native XCTest and static contracts for restart, cancellation,
+  activation, controller deallocation, extreme clocks, and terminal state.
+
 ## 2026-06-14
 
 - Corrected countdown label grammar so the final running value reads and is

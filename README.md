@@ -148,6 +148,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   running/completed deadline boundary used by timer callbacks and XCTest.
 - See `docs/plans/2026-06-14-countdown-label-grammar.md` for singular and plural
   visible and accessibility countdown text.
+- See `docs/plans/2026-06-19-timer-generation-deep-review.md` for extreme
+  deadline clamping, stale callback generations, and exactly-once completion.
 
 ## Contributing
 

@@ -291,9 +291,19 @@ def project_checks():
         "countdownState(until: deadline, now: deadline),\n            .completed",
         "countdownState(until: deadline, now: deadline + 1),\n            .completed",
         "testCountdownLabelUsesSingularAndPluralGrammar",
+        "testCountdownLabelKeepsVisibleAndAccessibilityTextInSync",
         'countdownLabelText(for: 0), "0 seconds"',
         'countdownLabelText(for: 1), "1 second"',
         'countdownLabelText(for: 120), "120 seconds"',
+        "testRemainingSecondsClampsIntervalsLargerThanIntMax",
+        "testRemainingSecondsTreatsInvalidClockValuesAsCompleted",
+        "testCompletedCountdownResetsOnlyOnce",
+        "testCancelledCountdownIgnoresItsStaleTimerGeneration",
+        "testRestartedCountdownIgnoresPreviousTimerGeneration",
+        "testRestartInvalidatesPreviousTimer",
+        "testStartAndStopKeepPromptVisibilityDeterministic",
+        "testActivationReconciliationCompletesOnlyOnce",
+        "testRepeatingTimerDoesNotRetainDepartedController",
     ):
         if fragment not in tests:
             errors.append(f"XCTest coverage is missing: {fragment}")
@@ -334,8 +344,14 @@ def timer_checks():
         errors.append("setupTimer must use the block-based repeating timer API")
     if "{ [weak self] _ in" not in setup_body:
         errors.append("setupTimer must not retain the controller through its timer callback")
-    if "self?.subtractTime()" not in setup_body:
-        errors.append("the weak timer callback must forward ticks to subtractTime")
+    if "self?.timerDidFire(generation: generation)" not in setup_body:
+        errors.append("the weak timer callback must forward its captured generation")
+    for fragment in (
+        "timerGeneration &+= 1",
+        "let generation = timerGeneration",
+    ):
+        if fragment not in setup_body:
+            errors.append(f"setupTimer generation ownership is missing: {fragment}")
     if "target: self" in setup_body or "selector: #selector(subtractTime)" in setup_body:
         errors.append("setupTimer must not use the retaining target-selector timer API")
     for fragment in (
@@ -348,8 +364,23 @@ def timer_checks():
     ):
         if fragment not in source:
             errors.append(f"testable countdown state is missing: {fragment}")
-    if "switch countdownState(until: timerEndTime)" not in subtract_body:
+    if "switch countdownState(until: timerEndTime, now: now)" not in subtract_body:
         errors.append("countdown ticks must use the testable countdown state")
+    for fragment in (
+        "func timerDidFire(",
+        "generation: UInt",
+        "guard generation == timerGeneration else",
+        "reconcileCountdown(now: now)",
+    ):
+        if fragment not in subtract_body:
+            errors.append(f"stale timer callback protection is missing: {fragment}")
+    inactive_guard = (
+        "guard let timerEndTime = timerEndTime else {\n"
+        "            return\n"
+        "        }"
+    )
+    if inactive_guard not in subtract_body:
+        errors.append("inactive countdown reconciliation must not repeat terminal reset side effects")
     for fragment in (
         "func countdownLabelText(for seconds: Int) -> String",
         'seconds == 1 ? "second" : "seconds"',
@@ -413,6 +444,7 @@ def timer_checks():
     for fragment in (
         "timer?.invalidate()",
         "timer = nil",
+        "timerGeneration &+= 1",
         "timerEndTime = nil",
         "second = 0",
         "updateTimerLabel()",
@@ -446,7 +478,11 @@ def timer_checks():
     for fragment in (
         "until endTime: TimeInterval",
         "now: TimeInterval = continuousTime()",
-        "max(0, Int(ceil(endTime - now)))",
+        "guard endTime.isFinite, now.isFinite else",
+        "guard remaining > 0 else",
+        "guard remaining < Double(Int.max) else",
+        "return Int.max",
+        "return Int(ceil(remaining))",
     ):
         if fragment not in source:
             errors.append(f"deadline countdown helper is missing: {fragment}")
