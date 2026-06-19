@@ -28,14 +28,25 @@ Helpful reports include:
 - Review found network clients, sockets, web APIs, or service endpoints; changes in those areas should receive security-focused review before merge.
 - Review found file, document, data, or media parsing flows; changes in those areas should receive security-focused review before merge.
 - No primary dependency manifest was detected in the repository root. If dependencies are added later, include a manifest and prefer reproducible installation instructions.
-- GitHub Actions runs the SDK-free `make check` baseline on Ubuntu 24.04 and a
-  credential-free Xcode 16.4 simulator compilation on macOS 15 with read-only
-  repository permissions, bounded jobs, concurrency cancellation, and
-  commit-pinned Node 24 actions. Do not add health data collection, analytics,
-  deployment, or credentialed service steps without a separate privacy and
-  security review.
-- The local brushing timer uses only an in-memory deadline and does not persist
-  or transmit habit, health, or device activity data.
+- GitHub Actions runs the SDK-free `make check` baseline on Ubuntu 24.04 and
+  executes the offline XCTest suite on an Xcode 16.4 simulator on macOS 15
+  with read-only repository
+  permissions, credential-free checkout, bounded jobs, concurrency
+  cancellation, and commit-pinned Node 24 actions. Do not add health data
+  collection, analytics, deployment, or credentialed service steps without a
+  separate privacy and security review.
+- The local brushing timer uses only an in-memory continuous monotonic deadline,
+  includes device sleep, does not depend on wall-clock changes, and does not
+  persist or transmit habit, health, or device activity data. The bundled
+  privacy manifest declares system boot time reason `35F9.1` for this timer.
+- The repeating timer captures its controller weakly so missed lifecycle cleanup
+  cannot keep the screen and its UI state alive through a target-retain cycle.
+- Foreground countdown reconciliation updates only an active in-memory deadline
+  and removes its application notification observer during controller teardown.
+- Testable countdown completion derives a local running/completed value from
+  that in-memory deadline without persisting or transmitting timer state.
+- Countdown label grammar formats only the local remaining-second value and
+  keeps visible and accessibility text synchronized without new data handling.
 
 ## Mobile Privacy Notes
 

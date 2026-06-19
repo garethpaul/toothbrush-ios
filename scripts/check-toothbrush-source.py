@@ -14,7 +14,18 @@ NAVIGATION_LOGO_LAYOUT_PLAN = DOCS_PLANS / "2026-06-09-navigation-logo-layout.md
 CI_PLAN = DOCS_PLANS / "2026-06-10-ci-baseline.md"
 MODERNIZATION_PLAN = DOCS_PLANS / "2026-06-10-swift-5-xcode-build.md"
 DEADLINE_TIMER_PLAN = DOCS_PLANS / "2026-06-10-deadline-countdown.md"
+HOSTED_XCTEST_PLAN = DOCS_PLANS / "2026-06-12-hosted-xctest.md"
+WEAK_TIMER_PLAN = DOCS_PLANS / "2026-06-12-weak-timer-ownership.md"
+MONOTONIC_DEADLINE_PLAN = DOCS_PLANS / "2026-06-13-monotonic-countdown-deadline.md"
+FOREGROUND_RECONCILIATION_PLAN = DOCS_PLANS / "2026-06-13-foreground-countdown-reconciliation.md"
+ROOT_OVERRIDE_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
+COUNTDOWN_COMPLETION_PLAN = DOCS_PLANS / "2026-06-14-testable-countdown-completion.md"
+COUNTDOWN_LABEL_PLAN = DOCS_PLANS / "2026-06-14-countdown-label-grammar.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
+SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
+CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
+SETUP_PYTHON_ACTION = "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405"
+ALLOWED_ACTIONS = {"actions/checkout", "actions/setup-python"}
 
 
 def read_text(relative_path):
@@ -28,6 +39,7 @@ def require_paths():
         "toothbrush/ViewController.swift",
         "toothbrush/Hex.swift",
         "toothbrush/Info.plist",
+        "toothbrush/PrivacyInfo.xcprivacy",
         "toothbrushTests/toothbrushTests.swift",
         "toothbrush/Images.xcassets/AppIcon.appiconset/Icon-83.5@2x.png",
         "toothbrush/Images.xcassets/AppIcon.appiconset/Icon-AppStore-1024.png",
@@ -53,8 +65,24 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-10-swift-5-xcode-build.md is missing")
     if not DEADLINE_TIMER_PLAN.exists():
         errors.append("docs/plans/2026-06-10-deadline-countdown.md is missing")
+    if not HOSTED_XCTEST_PLAN.exists():
+        errors.append("docs/plans/2026-06-12-hosted-xctest.md is missing")
+    if not WEAK_TIMER_PLAN.exists():
+        errors.append("docs/plans/2026-06-12-weak-timer-ownership.md is missing")
+    if not MONOTONIC_DEADLINE_PLAN.exists():
+        errors.append("docs/plans/2026-06-13-monotonic-countdown-deadline.md is missing")
+    if not FOREGROUND_RECONCILIATION_PLAN.exists():
+        errors.append("docs/plans/2026-06-13-foreground-countdown-reconciliation.md is missing")
+    if not ROOT_OVERRIDE_PLAN.exists():
+        errors.append("docs/plans/2026-06-14-make-root-override-protection.md is missing")
+    if not COUNTDOWN_COMPLETION_PLAN.exists():
+        errors.append("docs/plans/2026-06-14-testable-countdown-completion.md is missing")
+    if not COUNTDOWN_LABEL_PLAN.exists():
+        errors.append("docs/plans/2026-06-14-countdown-label-grammar.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
+    if not SHARED_SCHEME.exists():
+        errors.append("toothbrush.xcodeproj must include the shared toothbrush test scheme")
 
     plans = sorted(DOCS_PLANS.glob("*.md")) if DOCS_PLANS.exists() else []
     if not plans:
@@ -64,6 +92,24 @@ def docs_plan_checks():
         plan = plan_path.read_text(encoding="utf-8")
         if "Status: Completed" not in plan or "make check" not in plan:
             errors.append(f"{plan_path.relative_to(ROOT)} must record completed status and make check verification")
+
+    for relative_path in ("README.md", "SECURITY.md", "VISION.md", "CHANGES.md"):
+        if "foreground countdown reconciliation" not in read_text(relative_path).lower():
+            errors.append(f"{relative_path} must document foreground countdown reconciliation")
+        if "testable countdown completion" not in read_text(relative_path).lower():
+            errors.append(f"{relative_path} must document testable countdown completion")
+        if "countdown label grammar" not in read_text(relative_path).lower():
+            errors.append(f"{relative_path} must document countdown label grammar")
+
+    if COUNTDOWN_COMPLETION_PLAN.exists():
+        completion_plan = COUNTDOWN_COMPLETION_PLAN.read_text(encoding="utf-8")
+        for fragment in (
+            "focused countdown-state XCTest coverage passed",
+            "repository and external-directory `make check` passed",
+            "hostile countdown-state mutations were rejected",
+        ):
+            if fragment not in completion_plan:
+                errors.append(f"countdown completion plan is missing verification evidence: {fragment}")
 
     return errors
 
@@ -85,18 +131,46 @@ def project_checks():
         "timeout-minutes: 5",
         "timeout-minutes: 15",
         "DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer",
-        "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3",
-        "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0",
+        f"{CHECKOUT_ACTION} # v6.0.3",
+        f"{SETUP_PYTHON_ACTION} # v6.2.0",
+        "persist-credentials: false",
         'python-version: "3.12"',
         "run: make check",
-        "run: make build",
+        "- name: Run XCTest",
+        "run: make test",
     ):
         if fragment not in workflow:
             errors.append(f"GitHub Actions workflow is missing expected setting: {fragment}")
+    if workflow.count(f"uses: {CHECKOUT_ACTION}") != 2:
+        errors.append("GitHub Actions workflow must use the approved checkout action twice")
+    if workflow.count(f"uses: {SETUP_PYTHON_ACTION}") != 1:
+        errors.append("GitHub Actions workflow must use the approved Python setup action once")
+    if workflow.count("persist-credentials: false") != 2:
+        errors.append("GitHub Actions checkout steps must not persist credentials")
+    if not re.search(r"(?m)^permissions:\n  contents: read\n\nconcurrency:", workflow):
+        errors.append("GitHub Actions workflow must keep exact read-only top-level permissions")
+    if "pull_request_target:" in workflow:
+        errors.append("GitHub Actions workflow must not use pull_request_target")
+    for action, revision in re.findall(
+        r"^\s*(?:-\s*)?uses:\s*([^@\s]+)@([^\s#]+)", workflow, flags=re.MULTILINE
+    ):
+        if action not in ALLOWED_ACTIONS:
+            errors.append(f"GitHub Actions action {action} is not approved")
+        if not re.fullmatch(r"[a-f0-9]{40}", revision):
+            errors.append(f"GitHub Actions action {action} must be pinned to a full commit SHA")
 
-    docs = "\n".join(read_text(path) for path in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"))
-    if "GitHub Actions" not in docs:
-        errors.append("project docs must mention the GitHub Actions static baseline")
+    for docs_path in ("README.md", "VISION.md", "SECURITY.md", "CHANGES.md"):
+        if "GitHub Actions" not in read_text(docs_path):
+            errors.append(f"{docs_path} must mention the GitHub Actions baseline")
+    documentation_contracts = {
+        "README.md": "continuous monotonic deadline",
+        "SECURITY.md": "does not depend on wall-clock changes",
+        "VISION.md": "independent of device wall-clock changes",
+        "CHANGES.md": "required-reason privacy manifest coverage",
+    }
+    for docs_path, fragment in documentation_contracts.items():
+        if fragment not in read_text(docs_path):
+            errors.append(f"{docs_path} must document the monotonic countdown boundary")
 
     project = read_text("toothbrush.xcodeproj/project.pbxproj")
     for fragment in (
@@ -105,6 +179,7 @@ def project_checks():
         "SWIFT_VERSION = 5.0;",
         "PRODUCT_BUNDLE_IDENTIFIER = com.garethpaul.toothbrush;",
         "PRODUCT_BUNDLE_IDENTIFIER = com.garethpaul.toothbrushTests;",
+        "PrivacyInfo.xcprivacy in Resources",
     ):
         if fragment not in project:
             errors.append(f"project is missing expected setting: {fragment}")
@@ -112,8 +187,27 @@ def project_checks():
         errors.append("project must not retain the unsupported iOS 8.3 deployment target")
 
     makefile = read_text("Makefile")
+    root_declaration = "override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))"
+    root_assignments = re.findall(r"^(?:override\s+)?ROOT\s*[:+?]?=", makefile, re.MULTILINE)
+    if len(root_assignments) != 1 or makefile.count(root_declaration) != 1:
+        errors.append("Makefile must contain exactly one protected repository-root declaration")
+    root_and_tool_block = "\n".join((
+        root_declaration,
+        "PYTHON ?= python3",
+        "XCODEBUILD ?= xcodebuild",
+    ))
+    if makefile.count(root_and_tool_block) != 1:
+        errors.append("Makefile must keep the protected root before tool overrides")
     for fragment in (
-        "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))",
+        ".PHONY: build check lint test verify",
+        "build: lint",
+        "verify: lint test build",
+        "check: verify",
+        '"$(ROOT)/scripts/check-toothbrush-source.py"',
+        '"$(ROOT)/toothbrush.xcodeproj"',
+        "-scheme toothbrush",
+        "-destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'",
+        "CODE_SIGNING_ALLOWED=NO test",
         "-target toothbrushTests",
         "-sdk iphonesimulator",
         "CODE_SIGNING_ALLOWED=NO",
@@ -122,6 +216,22 @@ def project_checks():
     ):
         if fragment not in makefile:
             errors.append(f"Makefile is missing expected build setting: {fragment}")
+
+    if "docs/plans/2026-06-14-make-root-override-protection.md" not in read_text("README.md"):
+        errors.append("README must index Make root override protection evidence")
+
+    scheme = SHARED_SCHEME.read_text(encoding="utf-8")
+    for fragment in (
+        'BlueprintIdentifier = "7F2D998C1B10E62F00668E52"',
+        '<TestableReference',
+        'skipped = "NO"',
+    ):
+        if fragment not in scheme:
+            errors.append(f"shared XCTest scheme is missing: {fragment}")
+    if scheme.count('BlueprintIdentifier = "7F2D99A11B10E62F00668E52"') != 2:
+        errors.append("shared XCTest scheme must reference the test target in build and test actions")
+    if scheme.count('BuildableName = "toothbrushTests.xctest"') != 2:
+        errors.append("shared XCTest scheme must build and execute the test bundle")
 
     app_delegate = read_text("toothbrush/AppDelegate.swift")
     if "@main" not in app_delegate or "UIApplication.LaunchOptionsKey" not in app_delegate:
@@ -148,6 +258,16 @@ def project_checks():
         errors.append("app plist must not require the obsolete armv7 capability")
     if "$(PRODUCT_BUNDLE_IDENTIFIER)" not in app_plist:
         errors.append("app plist must use the target product bundle identifier")
+    privacy_manifest = read_text("toothbrush/PrivacyInfo.xcprivacy")
+    for fragment in (
+        "NSPrivacyAccessedAPICategorySystemBootTime",
+        "35F9.1",
+        "<key>NSPrivacyTracking</key>",
+        "<false/>",
+        "<key>NSPrivacyCollectedDataTypes</key>",
+    ):
+        if fragment not in privacy_manifest:
+            errors.append(f"privacy manifest is missing timer disclosure: {fragment}")
 
     app_icons = read_text("toothbrush/Images.xcassets/AppIcon.appiconset/Contents.json")
     for filename in ("Icon-83.5@2x.png", "Icon-AppStore-1024.png"):
@@ -160,7 +280,30 @@ def project_checks():
         "@testable import toothbrush",
         "testHexColorParsesTrimmedHashValue",
         "testHexColorRejectsPartialInput",
-        "testRemainingSecondsUsesDeadlineInsteadOfTickCount",
+        "testRemainingSecondsUsesMonotonicDeadlineInsteadOfTickCount",
+        "let start: TimeInterval = 1_000",
+        "let deadline = start + 120",
+        "now: start + 1.1",
+        "now: start + 120.1",
+        "testCountdownStateMakesCompletionImmediatelyTestable",
+        ".running(seconds: 120)",
+        "countdownState(until: deadline, now: deadline - 0.1),\n            .running(seconds: 1)",
+        "countdownState(until: deadline, now: deadline),\n            .completed",
+        "countdownState(until: deadline, now: deadline + 1),\n            .completed",
+        "testCountdownLabelUsesSingularAndPluralGrammar",
+        "testCountdownLabelKeepsVisibleAndAccessibilityTextInSync",
+        'countdownLabelText(for: 0), "0 seconds"',
+        'countdownLabelText(for: 1), "1 second"',
+        'countdownLabelText(for: 120), "120 seconds"',
+        "testRemainingSecondsClampsIntervalsLargerThanIntMax",
+        "testRemainingSecondsTreatsInvalidClockValuesAsCompleted",
+        "testCompletedCountdownResetsOnlyOnce",
+        "testCancelledCountdownIgnoresItsStaleTimerGeneration",
+        "testRestartedCountdownIgnoresPreviousTimerGeneration",
+        "testRestartInvalidatesPreviousTimer",
+        "testStartAndStopKeepPromptVisibilityDeterministic",
+        "testActivationReconciliationCompletesOnlyOnce",
+        "testRepeatingTimerDoesNotRetainDepartedController",
     ):
         if fragment not in tests:
             errors.append(f"XCTest coverage is missing: {fragment}")
@@ -191,24 +334,105 @@ def timer_checks():
     deinit_body = deinit.group("body") if deinit else ""
     if "timer?.invalidate()" not in setup_body:
         errors.append("setupTimer must invalidate any existing timer before scheduling")
-    if "timerEndDate = Date().addingTimeInterval(TimeInterval(second))" not in setup_body:
-        errors.append("setupTimer must establish a real-time countdown deadline")
+    if "timerEndTime = continuousTime() + TimeInterval(second)" not in setup_body:
+        errors.append("setupTimer must establish a monotonic countdown deadline")
     if "timer?.tolerance = 0.1" not in setup_body:
         errors.append("setupTimer must set a small tolerance on the repeating timer")
     if "RunLoop.main.add(timer, forMode: .common)" not in setup_body:
         errors.append("setupTimer must add the countdown timer to common run-loop modes")
-    if "if second == 0" in source:
-        errors.append("countdown completion must handle zero and negative values")
-    if "if second <= 0" not in source:
-        errors.append("countdown completion must use second <= 0")
+    if "Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true)" not in setup_body:
+        errors.append("setupTimer must use the block-based repeating timer API")
+    if "{ [weak self] _ in" not in setup_body:
+        errors.append("setupTimer must not retain the controller through its timer callback")
+    if "self?.timerDidFire(generation: generation)" not in setup_body:
+        errors.append("the weak timer callback must forward its captured generation")
+    for fragment in (
+        "timerGeneration &+= 1",
+        "let generation = timerGeneration",
+    ):
+        if fragment not in setup_body:
+            errors.append(f"setupTimer generation ownership is missing: {fragment}")
+    if "target: self" in setup_body or "selector: #selector(subtractTime)" in setup_body:
+        errors.append("setupTimer must not use the retaining target-selector timer API")
+    for fragment in (
+        "enum CountdownState: Equatable",
+        "case running(seconds: Int)",
+        "case completed",
+        "func countdownState(",
+        "let remainingSeconds = remainingWholeSeconds(until: endTime, now: now)",
+        "remainingSeconds > 0 ? .running(seconds: remainingSeconds) : .completed",
+    ):
+        if fragment not in source:
+            errors.append(f"testable countdown state is missing: {fragment}")
+    if "switch countdownState(until: timerEndTime, now: now)" not in subtract_body:
+        errors.append("countdown ticks must use the testable countdown state")
+    for fragment in (
+        "func timerDidFire(",
+        "generation: UInt",
+        "guard generation == timerGeneration else",
+        "reconcileCountdown(now: now)",
+    ):
+        if fragment not in subtract_body:
+            errors.append(f"stale timer callback protection is missing: {fragment}")
+    inactive_guard = (
+        "guard let timerEndTime = timerEndTime else {\n"
+        "            return\n"
+        "        }"
+    )
+    if inactive_guard not in subtract_body:
+        errors.append("inactive countdown reconciliation must not repeat terminal reset side effects")
+    for fragment in (
+        "func countdownLabelText(for seconds: Int) -> String",
+        'seconds == 1 ? "second" : "seconds"',
+        'return "\\(seconds) \\(unit)"',
+        "let labelText = countdownLabelText(for: second)",
+    ):
+        if fragment not in source:
+            errors.append(f"countdown label grammar is missing: {fragment}")
+    for fragment in (
+        "case .running(let remainingSeconds):",
+        "second = remainingSeconds",
+        "case .completed:",
+    ):
+        if fragment not in subtract_body:
+            errors.append(f"countdown state integration is missing: {fragment}")
     if "stopTimerAndResetPrompt()" not in subtract_body:
         errors.append("countdown completion must stop the timer through the shared reset path")
     if "second -= 1" in subtract_body:
         errors.append("countdown ticks must not assume every timer callback is exactly one second apart")
-    if "second = remainingWholeSeconds(until: timerEndDate)" not in subtract_body:
-        errors.append("countdown ticks must derive remaining time from the deadline")
     if "stopTimerAndResetPrompt()" not in disappear_body:
         errors.append("view disappearance must stop the timer through the shared reset path")
+    activation_observer = (
+        "NotificationCenter.default.addObserver(\n"
+        "            self,\n"
+        "            selector: #selector(applicationDidBecomeActive(_:)),\n"
+        "            name: UIApplication.didBecomeActiveNotification,\n"
+        "            object: nil\n"
+        "        )"
+    )
+    if activation_observer not in source:
+        errors.append("countdown must observe application activation through its reconciliation handler")
+    activation_removal = (
+        "NotificationCenter.default.removeObserver(\n"
+        "            self,\n"
+        "            name: UIApplication.didBecomeActiveNotification,\n"
+        "            object: nil\n"
+        "        )"
+    )
+    if activation_removal not in deinit_body:
+        errors.append("controller teardown must remove the matching application activation observer")
+    active_handler = (
+        "@objc func applicationDidBecomeActive(_ notification: Notification) {\n"
+        "        guard timerEndTime != nil else {\n"
+        "            return\n"
+        "        }\n"
+        "        subtractTime()\n"
+        "    }"
+    )
+    if active_handler not in source:
+        errors.append("countdown application activation handler is missing")
+    if "func applicationDidBecomeActive" in source and "remainingWholeSeconds" in source[source.find("func applicationDidBecomeActive"):source.find("override func viewWillDisappear")]:
+        errors.append("application activation must not duplicate countdown arithmetic")
     if "showNavigationLogo()" not in appear_body:
         errors.append("view appearance must reattach the navigation logo")
     if "super.viewDidLayoutSubviews()" not in layout_body:
@@ -220,7 +444,8 @@ def timer_checks():
     for fragment in (
         "timer?.invalidate()",
         "timer = nil",
-        "timerEndDate = nil",
+        "timerGeneration &+= 1",
+        "timerEndTime = nil",
         "second = 0",
         "updateTimerLabel()",
         "brushText.layer.removeAllAnimations()",
@@ -251,11 +476,28 @@ def timer_checks():
     if source.count("updateNavigationLogoFrame()") < 4:
         errors.append("navigation logo frame must be refreshed during setup, layout, and reattachment")
     for fragment in (
-        "func remainingWholeSeconds(until endDate: Date, now: Date = Date()) -> Int",
-        "max(0, Int(ceil(endDate.timeIntervalSince(now))))",
+        "until endTime: TimeInterval",
+        "now: TimeInterval = continuousTime()",
+        "guard endTime.isFinite, now.isFinite else",
+        "guard remaining > 0 else",
+        "guard remaining < Double(Int.max) else",
+        "return Int.max",
+        "return Int(ceil(remaining))",
     ):
         if fragment not in source:
             errors.append(f"deadline countdown helper is missing: {fragment}")
+    for fragment in (
+        "import Darwin",
+        "mach_continuous_time()",
+        "mach_timebase_info(&info)",
+        "nanoseconds / 1_000_000_000",
+    ):
+        if fragment not in source:
+            errors.append(f"continuous sleep-aware clock is missing: {fragment}")
+    if "ProcessInfo.processInfo.systemUptime" in source:
+        errors.append("countdown must not use awake-only systemUptime")
+    if "timerEndDate" in source or "Date().addingTimeInterval" in source:
+        errors.append("countdown deadlines must not depend on the wall clock")
 
     return errors
 

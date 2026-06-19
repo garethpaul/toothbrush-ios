@@ -1,5 +1,39 @@
 # Changes
 
+## 2026-06-19
+
+- Clamped invalid and unrepresentable countdown intervals so deadline
+  reconciliation cannot trap while converting extreme `TimeInterval` values.
+- Added per-run timer generations so callbacks from cancelled or restarted
+  countdowns cannot mutate the current run.
+- Made inactive countdown reconciliation a no-op, preserving exactly-once
+  completion reset behavior across timer and application-activation callbacks.
+- Expanded native XCTest and static contracts for restart, cancellation,
+  activation, controller deallocation, extreme clocks, and terminal state.
+
+## 2026-06-14
+
+- Corrected countdown label grammar so the final running value reads and is
+  announced as `1 second` instead of `1 seconds`.
+- Added a testable countdown completion state so running and completed
+  deadline transitions can be verified immediately without a live timer.
+
+## 2026-06-13
+
+- Added foreground countdown reconciliation so an active timer refreshes
+  immediately when the application becomes active again.
+- Moved the brushing deadline from wall-clock `Date` values to a continuous
+  monotonic clock so device clock adjustments and sleep cannot alter a running
+  countdown, with required-reason privacy manifest coverage.
+
+## 2026-06-12
+
+- Replaced target-selector timer ownership with a weak block callback so the
+  repeating timer cannot retain its view controller.
+- Added a shared Xcode scheme and changed hosted macOS validation from
+  compile-only coverage to executing all offline XCTest cases on a pinned
+  iPhone simulator.
+
 ## 2026-06-10
 
 - Derived countdown values from a real-time deadline so delayed timer callbacks
@@ -16,7 +50,7 @@
   extended static contracts for the modern project and hosted build.
 - Added a least-privilege GitHub Actions workflow that runs the SDK-free
   `make check` baseline with commit-pinned Node 24 actions and a bounded
-  runtime.
+  runtime, read-only permissions, and credential-free checkout.
 
 ## 2026-06-09
 

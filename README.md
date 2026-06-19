@@ -3,6 +3,11 @@
 <!-- README-OVERVIEW-IMAGE -->
 ![Project overview](docs/readme-overview.svg)
 
+## Device Preview
+
+<!-- DEVICE-PREVIEW-IMAGE -->
+![Device preview](docs/device-preview.svg)
+
 ## Overview
 
 `garethpaul/toothbrush-ios` is an Apple platform application or Swift sample. A toothbrush companion app. 
@@ -56,27 +61,36 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - `make check` runs static project checks, timer lifecycle checks, hex color
   parser checks, and timer accessibility checks. When `xcodebuild` is
-  installed, the `build` target compiles the app and XCTest target for the iOS
-  simulator with code signing disabled. The project uses Swift 5 and an iOS 12
-  deployment target.
+  installed, the `test` target executes the shared XCTest scheme on an iPhone
+  16 Pro simulator and the `build` target compiles the app and XCTest target
+  with code signing disabled. The project uses Swift 5 and an iOS 12 deployment
+  target.
 - Timer lifecycle checks also require teardown to invalidate timers and remove
   the custom navigation logo view. They also require view appearance to
   reattach the logo and view disappearance to stop an active timer through the
   shared reset path while removing the logo. The reset path must zero the
   countdown while keeping the timer label, accessibility value, and prompt
   visibility state in sync. The repeating countdown timer must also set a small
-  scheduling tolerance and run in common run-loop modes. Navigation logo checks
-  also require layout passes to recenter the custom logo.
-- Countdown values are derived from a two-minute deadline rather than callback
-  count, with XCTest coverage for delayed callbacks and expired deadlines.
+  scheduling tolerance, run in common run-loop modes, and capture the controller
+  weakly so timer ownership cannot keep a departed screen alive. Navigation
+  logo checks also require layout passes to recenter the custom logo.
+- Countdown values are derived from a two-minute continuous monotonic deadline
+  rather than callback count or the device wall clock, with XCTest coverage
+  for delayed callbacks and expired deadlines. The clock includes device sleep,
+  and the bundled privacy manifest declares timer reason `35F9.1`. Foreground
+  countdown reconciliation immediately refreshes an active timer when the app
+  becomes active again. A testable countdown completion state keeps running and
+  completed deadline behavior covered without waiting two minutes. Countdown
+  text uses countdown label grammar that keeps the final running value visible
+  and announced as `1 second` while zero and larger values remain plural.
 - Static project checks also require completed canonical plans under `docs/plans`.
-- Xcode's test action or `xcodebuild test` with the appropriate scheme and
-  destination can execute the color-parser XCTest assertions on macOS.
+- The shared `toothbrush` scheme executes the color-parser and deadline XCTest
+  assertions on the pinned simulator destination.
 - GitHub Actions runs the Python static `make check` baseline on Ubuntu 24.04
-  and compiles the app plus XCTest target with Xcode 16.4 on macOS 15. The
+  and executes the XCTest target with Xcode 16.4 on macOS 15. The
   workflow has read-only repository permissions, bounded jobs, concurrency
-  cancellation, and commit-pinned Node 24 actions. Runtime UI verification
-  still requires a simulator or device.
+  cancellation, credential-free checkout, and commit-pinned Node 24 actions.
+  Runtime UI verification still requires a simulator or device.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -120,6 +134,22 @@ When the required SDK or runtime is unavailable, use static checks and source re
   contract gate.
 - See `docs/plans/2026-06-10-deadline-countdown.md` for real-time countdown
   calculation and delayed-tick XCTest coverage.
+- See `docs/plans/2026-06-13-monotonic-countdown-deadline.md` for the
+  wall-clock-independent countdown boundary.
+- See `docs/plans/2026-06-13-foreground-countdown-reconciliation.md` for the
+  foreground countdown reconciliation lifecycle contract.
+- See `docs/plans/2026-06-12-hosted-xctest.md` for the shared scheme and hosted
+  simulator test gate.
+- See `docs/plans/2026-06-12-weak-timer-ownership.md` for weak callback capture
+  that prevents the repeating timer from retaining its controller.
+- See `docs/plans/2026-06-14-make-root-override-protection.md` for authoritative
+  repository-root selection across all Make aliases.
+- See `docs/plans/2026-06-14-testable-countdown-completion.md` for the pure
+  running/completed deadline boundary used by timer callbacks and XCTest.
+- See `docs/plans/2026-06-14-countdown-label-grammar.md` for singular and plural
+  visible and accessibility countdown text.
+- See `docs/plans/2026-06-19-timer-generation-deep-review.md` for extreme
+  deadline clamping, stale callback generations, and exactly-once completion.
 
 ## Contributing
 

@@ -20,9 +20,11 @@ or a device, but the portable contracts previously had no hosted gate.
 
 - Added `.github/workflows/check.yml` for pushes to `master`, pull requests,
   and manual runs.
-- Granted only read access to repository contents and set a five-minute timeout.
+- Granted only read access to repository contents, disabled persisted checkout
+  credentials, and bounded both hosted jobs with timeouts.
 - Pinned checkout and Python setup actions to immutable Node 24 commits.
 - Ran the existing `make check` entry point with Python 3.12.
+- Added an Xcode 16.4 simulator compilation job for the app and XCTest target.
 - Extended the project checker to enforce the workflow contract.
 - Updated README, SECURITY, VISION, and CHANGES with the hosted baseline.
 
@@ -36,6 +38,6 @@ or a device, but the portable contracts previously had no hosted gate.
 - `make check`
 - `git diff --check`
 
-The Linux job validates portable source and repository contracts only. It does
-not compile Swift, run XCTest, launch a simulator, exercise device lifecycle
-behavior, or validate the historical iOS deployment target.
+The Linux job validates portable source and repository contracts only. The
+macOS job compiles Swift and XCTest sources but does not launch a simulator or
+exercise device lifecycle behavior.

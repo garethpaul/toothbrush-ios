@@ -6,10 +6,56 @@
 //  Copyright (c) 2015 GarethPaul. All rights reserved.
 //
 
+import Darwin
 import UIKit
 
-func remainingWholeSeconds(until endDate: Date, now: Date = Date()) -> Int {
-    max(0, Int(ceil(endDate.timeIntervalSince(now))))
+private let continuousTimebase: mach_timebase_info_data_t = {
+    var info = mach_timebase_info_data_t()
+    mach_timebase_info(&info)
+    return info
+}()
+
+func continuousTime() -> TimeInterval {
+    let ticks = Double(mach_continuous_time())
+    let nanoseconds = ticks * Double(continuousTimebase.numer) / Double(continuousTimebase.denom)
+    return nanoseconds / 1_000_000_000
+}
+
+func remainingWholeSeconds(
+    until endTime: TimeInterval,
+    now: TimeInterval = continuousTime()
+) -> Int {
+    guard endTime.isFinite, now.isFinite else {
+        return 0
+    }
+
+    let remaining = endTime - now
+    guard remaining > 0 else {
+        return 0
+    }
+    guard remaining < Double(Int.max) else {
+        return Int.max
+    }
+
+    return Int(ceil(remaining))
+}
+
+enum CountdownState: Equatable {
+    case running(seconds: Int)
+    case completed
+}
+
+func countdownState(
+    until endTime: TimeInterval,
+    now: TimeInterval = continuousTime()
+) -> CountdownState {
+    let remainingSeconds = remainingWholeSeconds(until: endTime, now: now)
+    return remainingSeconds > 0 ? .running(seconds: remainingSeconds) : .completed
+}
+
+func countdownLabelText(for seconds: Int) -> String {
+    let unit = seconds == 1 ? "second" : "seconds"
+    return "\(seconds) \(unit)"
 }
 
 class ViewController: UIViewController {
@@ -28,9 +74,15 @@ class ViewController: UIViewController {
     var second = 0
     var count = 0
     var logoView: UIImageView?
-    var timerEndDate: Date?
+    var timerEndTime: TimeInterval?
+    var timerGeneration: UInt = 0
 
     deinit {
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
         timer?.invalidate()
         removeNavigationLogo()
     }
@@ -47,6 +99,12 @@ class ViewController: UIViewController {
 
         showNavigationLogo()
         setupAccessibility()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationDidBecomeActive(_:)),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -61,19 +119,17 @@ class ViewController: UIViewController {
 
     func setupTimer() {
         timer?.invalidate()
+        timerGeneration &+= 1
+        let generation = timerGeneration
         second = 120
         count = 0
-        timerEndDate = Date().addingTimeInterval(TimeInterval(second))
+        timerEndTime = continuousTime() + TimeInterval(second)
 
         updateTimerLabel()
 
-        timer = Timer.scheduledTimer(
-            timeInterval: 1.0,
-            target: self,
-            selector: #selector(subtractTime),
-            userInfo: nil,
-            repeats: true
-        )
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.timerDidFire(generation: generation)
+        }
         timer?.tolerance = 0.1
         if let timer = timer {
             RunLoop.main.add(timer, forMode: .common)
@@ -86,18 +142,38 @@ class ViewController: UIViewController {
     }
 
     @objc func subtractTime() {
-        if let timerEndDate = timerEndDate {
-            second = remainingWholeSeconds(until: timerEndDate)
-        } else {
-            second = 0
-        }
+        reconcileCountdown(now: continuousTime())
+    }
 
-        if second <= 0 {
-            stopTimerAndResetPrompt()
+    func timerDidFire(
+        generation: UInt,
+        now: TimeInterval = continuousTime()
+    ) {
+        guard generation == timerGeneration else {
+            return
+        }
+        reconcileCountdown(now: now)
+    }
+
+    private func reconcileCountdown(now: TimeInterval) {
+        guard let timerEndTime = timerEndTime else {
             return
         }
 
-        updateTimerLabel()
+        switch countdownState(until: timerEndTime, now: now) {
+        case .running(let remainingSeconds):
+            second = remainingSeconds
+            updateTimerLabel()
+        case .completed:
+            stopTimerAndResetPrompt()
+        }
+    }
+
+    @objc func applicationDidBecomeActive(_ notification: Notification) {
+        guard timerEndTime != nil else {
+            return
+        }
+        subtractTime()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -136,7 +212,7 @@ class ViewController: UIViewController {
     }
 
     func updateTimerLabel() {
-        let labelText = "\(second) seconds"
+        let labelText = countdownLabelText(for: second)
         seconds.text = labelText
         seconds.accessibilityValue = labelText
     }
@@ -144,7 +220,8 @@ class ViewController: UIViewController {
     func stopTimerAndResetPrompt() {
         timer?.invalidate()
         timer = nil
-        timerEndDate = nil
+        timerGeneration &+= 1
+        timerEndTime = nil
         second = 0
         updateTimerLabel()
         brushText.layer.removeAllAnimations()

@@ -15,6 +15,7 @@ The current focus is:
 Priority:
 
 - Preserve the 120-second countdown flow
+- Keep elapsed countdown time independent of device wall-clock changes
 - Keep the start/reset visual state obvious
 - Keep timer accessibility labels and values synchronized with visible state
 - Keep shared timer resets synchronized with countdown state
@@ -22,21 +23,23 @@ Priority:
 - Keep repeating countdown timers tolerant enough for efficient scheduling
 - Keep countdown ticks active during normal UI tracking interactions
 - Keep the two-minute interval accurate when timer callbacks are delayed
+- Keep foreground countdown reconciliation immediate after app activation
+- Keep repeating timer ownership from retaining a departed controller
 - Keep custom navigation views tied to controller appearance, disappearance,
   and teardown
 - Keep the custom navigation logo centered after layout changes
 - Stop active countdown timers when the view leaves screen
 - Maintain the app GIF as behavior context
 - Keep completed maintenance plans under `docs/plans`
-- Keep GitHub Actions aligned with both portable contracts and Xcode compilation
+- Keep GitHub Actions aligned with portable contracts and hosted XCTest execution
 - Keep the Swift 5, Xcode 16.4, and iOS 12 baseline explicit
-- Compile the app and XCTest target before merging
+- Execute the app's offline XCTest target before merging
 
 Next priorities:
 
-- Add a completion state that is testable without waiting two minutes
-- Add a shared scheme for hosted XCTest execution
-- Add simulator-backed accessibility assertions when Xcode is available
+- Keep testable countdown completion independent of live timer delays
+- Keep countdown label grammar correct for singular and plural values
+- Expand simulator-backed timer and accessibility assertions
 
 Contribution rules:
 
