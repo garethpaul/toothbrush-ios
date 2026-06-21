@@ -7,6 +7,14 @@ XCODEBUILD ?= xcodebuild
 override PYTHON := $(value PYTHON)
 override XCODEBUILD := $(value XCODEBUILD)
 export PYTHON XCODEBUILD
+override REPOSITORY_MAKE_DOLLAR := $$
+override REPOSITORY_MAKE_OPEN := (
+ifneq ($(findstring $(REPOSITORY_MAKE_DOLLAR)$(REPOSITORY_MAKE_OPEN),$(value PYTHON)),)
+$(error PYTHON must be a literal executable path, not Make syntax)
+endif
+ifneq ($(findstring $(REPOSITORY_MAKE_DOLLAR)$(REPOSITORY_MAKE_OPEN),$(value XCODEBUILD)),)
+$(error XCODEBUILD must be a literal executable path, not Make syntax)
+endif
 override SHELL := /bin/sh
 override .SHELLFLAGS := -c
 

@@ -245,6 +245,8 @@ def project_checks():
         ".PHONY: __repository-make-authority build check contract-test lint root-test test verify",
         "override PYTHON := $(value PYTHON)",
         "override XCODEBUILD := $(value XCODEBUILD)",
+        "PYTHON must be a literal executable path, not Make syntax",
+        "XCODEBUILD must be a literal executable path, not Make syntax",
         "override SHELL := /bin/sh",
         "MAKEFLAGS must not be overridden for repository verification",
         "non-executing or error-ignoring MAKEFLAGS are not supported",
