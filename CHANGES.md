@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-21
+
+- Isolated repository verification from caller-controlled Make roots, shells,
+  startup files, non-executing modes, and tool syntax.
+- Added adversarial Make and workflow regression coverage and pinned both
+  hosted gates to `/usr/bin/make`.
+
 ## 2026-06-19
 
 - Clamped invalid and unrepresentable countdown intervals so deadline

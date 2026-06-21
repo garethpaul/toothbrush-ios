@@ -21,11 +21,57 @@ FOREGROUND_RECONCILIATION_PLAN = DOCS_PLANS / "2026-06-13-foreground-countdown-r
 ROOT_OVERRIDE_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
 COUNTDOWN_COMPLETION_PLAN = DOCS_PLANS / "2026-06-14-testable-countdown-completion.md"
 COUNTDOWN_LABEL_PLAN = DOCS_PLANS / "2026-06-14-countdown-label-grammar.md"
+MAKE_AUTHORITY_PLAN = DOCS_PLANS / "2026-06-21-make-authority-isolation.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
 SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
 SETUP_PYTHON_ACTION = "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405"
 ALLOWED_ACTIONS = {"actions/checkout", "actions/setup-python"}
+EXPECTED_WORKFLOW = """name: Check
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+      - name: Run static baseline
+        run: /usr/bin/make check
+
+  xcode-build:
+    runs-on: macos-15
+    timeout-minutes: 15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Run XCTest
+        run: /usr/bin/make test
+"""
 
 
 def read_text(relative_path):
@@ -79,6 +125,8 @@ def docs_plan_checks():
         errors.append("docs/plans/2026-06-14-testable-countdown-completion.md is missing")
     if not COUNTDOWN_LABEL_PLAN.exists():
         errors.append("docs/plans/2026-06-14-countdown-label-grammar.md is missing")
+    if not MAKE_AUTHORITY_PLAN.exists():
+        errors.append("docs/plans/2026-06-21-make-authority-isolation.md is missing")
     if not CI_WORKFLOW.exists():
         errors.append(".github/workflows/check.yml is missing")
     if not SHARED_SCHEME.exists():
@@ -119,7 +167,9 @@ def project_checks():
     if errors:
         return errors
 
-    workflow = read_text(".github/workflows/check.yml")
+    workflow = CI_WORKFLOW.read_text(encoding="utf-8")
+    if workflow != EXPECTED_WORKFLOW:
+        errors.append("GitHub Actions workflow must match the reviewed Toothbrush validation contract")
     for fragment in (
         "permissions:",
         "contents: read",
@@ -135,9 +185,9 @@ def project_checks():
         f"{SETUP_PYTHON_ACTION} # v6.2.0",
         "persist-credentials: false",
         'python-version: "3.12"',
-        "run: make check",
+        "run: /usr/bin/make check",
         "- name: Run XCTest",
-        "run: make test",
+        "run: /usr/bin/make test",
     ):
         if fragment not in workflow:
             errors.append(f"GitHub Actions workflow is missing expected setting: {fragment}")
@@ -187,24 +237,29 @@ def project_checks():
         errors.append("project must not retain the unsupported iOS 8.3 deployment target")
 
     makefile = read_text("Makefile")
-    root_declaration = "override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))"
     root_assignments = re.findall(r"^(?:override\s+)?ROOT\s*[:+?]?=", makefile, re.MULTILINE)
-    if len(root_assignments) != 1 or makefile.count(root_declaration) != 1:
+    if len(root_assignments) != 1:
         errors.append("Makefile must contain exactly one protected repository-root declaration")
-    root_and_tool_block = "\n".join((
-        root_declaration,
-        "PYTHON ?= python3",
-        "XCODEBUILD ?= xcodebuild",
-    ))
-    if makefile.count(root_and_tool_block) != 1:
-        errors.append("Makefile must keep the protected root before tool overrides")
     for fragment in (
-        ".PHONY: build check lint test verify",
+        ".DEFAULT_GOAL := check",
+        ".PHONY: __repository-make-authority build check contract-test lint root-test test verify",
+        "override PYTHON := $(value PYTHON)",
+        "override XCODEBUILD := $(value XCODEBUILD)",
+        "override SHELL := /bin/sh",
+        "MAKEFLAGS must not be overridden for repository verification",
+        "non-executing or error-ignoring MAKEFLAGS are not supported",
+        "MAKEFILES must be empty",
+        "MAKEFILE_LIST must not be overridden",
+        "build check contract-test lint root-test test verify: __repository-make-authority",
         "build: lint",
-        "verify: lint test build",
+        "contract-test:",
+        '"$$PYTHON" "$$ROOT/scripts/test_workflow_contract.py"',
+        "root-test:",
+        '"$$ROOT/scripts/test-makefile-root.sh"',
+        "verify: root-test lint contract-test test build",
         "check: verify",
-        '"$(ROOT)/scripts/check-toothbrush-source.py"',
-        '"$(ROOT)/toothbrush.xcodeproj"',
+        '"$$ROOT/scripts/check-toothbrush-source.py"',
+        '"$$ROOT/toothbrush.xcodeproj"',
         "-scheme toothbrush",
         "-destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'",
         "CODE_SIGNING_ALLOWED=NO test",
@@ -219,6 +274,8 @@ def project_checks():
 
     if "docs/plans/2026-06-14-make-root-override-protection.md" not in read_text("README.md"):
         errors.append("README must index Make root override protection evidence")
+    if "docs/plans/2026-06-21-make-authority-isolation.md" not in read_text("README.md"):
+        errors.append("README must index Make authority isolation evidence")
 
     scheme = SHARED_SCHEME.read_text(encoding="utf-8")
     for fragment in (
