@@ -53,40 +53,47 @@ export ROOT
 ifeq ($(strip $(ROOT)),)
 $(error repository Makefile path could not be resolved)
 endif
+override REPOSITORY_SHELL_LITERAL = $(subst $$,$$$$,$(subst ','"'"',$1))
+override REPOSITORY_ROOT_LITERAL := $(call REPOSITORY_SHELL_LITERAL,$(ROOT))
+override REPOSITORY_PYTHON_LITERAL := $(call REPOSITORY_SHELL_LITERAL,$(PYTHON))
+override REPOSITORY_XCODEBUILD_LITERAL := $(call REPOSITORY_SHELL_LITERAL,$(XCODEBUILD))
 
-build check contract-test lint root-test test verify: $$(if $$(filter file,$$(origin MAKEFILE_LIST)),,$$(error MAKEFILE_LIST must not be overridden))
-build check contract-test lint root-test test verify: $$(if $$(shell path=$$$$(/usr/bin/printf '%s' '$$(subst ','"'"',$$(MAKEFILE_LIST))' | /usr/bin/sed 's/^ //') && [ -f "$$$$path" ] && /usr/bin/printf '%s' ok),,$$(error repository Makefile must be loaded alone))
-build check contract-test lint root-test test verify: __repository-make-authority
+build check contract-test lint root-test test verify:: $$(if $$(filter file,$$(origin MAKEFILE_LIST)),,$$(error MAKEFILE_LIST must not be overridden))
+build check contract-test lint root-test test verify:: $$(if $$(shell path=$$$$(/usr/bin/printf '%s' '$$(subst ','"'"',$$(MAKEFILE_LIST))' | /usr/bin/sed 's/^ //') && [ -f "$$$$path" ] && /usr/bin/printf '%s' ok),,$$(error repository Makefile must be loaded alone))
+build check contract-test lint root-test test verify:: __repository-make-authority
 
 __repository-make-authority::
 	@:
 
-lint:
-	"$$PYTHON" "$$ROOT/scripts/check-toothbrush-source.py" --mode project
+define REPOSITORY_PUBLIC_RECIPES
+lint::
+	'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/check-toothbrush-source.py' --mode project
 
-test:
-	"$$PYTHON" "$$ROOT/scripts/check-toothbrush-source.py" --mode timer
-	"$$PYTHON" "$$ROOT/scripts/check-toothbrush-source.py" --mode color
-	"$$PYTHON" "$$ROOT/scripts/check-toothbrush-source.py" --mode accessibility
-	@if command -v "$$XCODEBUILD" >/dev/null 2>&1; then \
-		"$$XCODEBUILD" -project "$$ROOT/toothbrush.xcodeproj" -scheme toothbrush -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' -configuration Debug CODE_SIGNING_ALLOWED=NO test; \
+test::
+	'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/check-toothbrush-source.py' --mode timer
+	'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/check-toothbrush-source.py' --mode color
+	'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/check-toothbrush-source.py' --mode accessibility
+	@if command -v '$(REPOSITORY_XCODEBUILD_LITERAL)' >/dev/null 2>&1; then \
+		'$(REPOSITORY_XCODEBUILD_LITERAL)' -project '$(REPOSITORY_ROOT_LITERAL)/toothbrush.xcodeproj' -scheme toothbrush -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' -configuration Debug CODE_SIGNING_ALLOWED=NO test; \
 	else \
 		echo "xcodebuild not found; static XCTest contracts completed"; \
 	fi
 
-contract-test:
-	"$$PYTHON" "$$ROOT/scripts/test_workflow_contract.py"
+contract-test::
+	'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_workflow_contract.py'
 
-build: lint
-	@if command -v "$$XCODEBUILD" >/dev/null 2>&1; then \
-		"$$XCODEBUILD" -project "$$ROOT/toothbrush.xcodeproj" -target toothbrushTests -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES build; \
+build:: lint
+	@if command -v '$(REPOSITORY_XCODEBUILD_LITERAL)' >/dev/null 2>&1; then \
+		'$(REPOSITORY_XCODEBUILD_LITERAL)' -project '$(REPOSITORY_ROOT_LITERAL)/toothbrush.xcodeproj' -target toothbrushTests -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES build; \
 	else \
 		echo "xcodebuild not found; static project checks completed"; \
 	fi
 
-root-test:
-	/bin/sh "$$ROOT/scripts/test-makefile-root.sh"
+root-test::
+	/bin/sh '$(REPOSITORY_ROOT_LITERAL)/scripts/test-makefile-root.sh'
 
-verify: root-test lint contract-test test build
+verify:: root-test lint contract-test test build
 
-check: verify
+check:: verify
+endef
+$(eval $(REPOSITORY_PUBLIC_RECIPES))

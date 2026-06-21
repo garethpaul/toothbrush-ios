@@ -29,6 +29,30 @@ if (cd "$CONTROL_DIR"&&/usr/bin/make --no-print-directory -f "$MAKEFILE" MAKEFIL
 if (cd "$CONTROL_DIR"&&MAKEFILE_LIST=/tmp/x /usr/bin/make --environment-overrides --no-print-directory -f "$MAKEFILE" check) >"$TEMP_ROOT/list2" 2>&1; then exit 1; fi; grep -Fq 'MAKEFILE_LIST must not be overridden' "$TEMP_ROOT/list2"
 PRE="$TEMP_ROOT/pre.mk"; PRE_MARKER="$TEMP_ROOT/pre-ran"; printf '%s\n' "\$(shell /usr/bin/touch '$PRE_MARKER')" >"$PRE"; if (cd "$CONTROL_DIR"&&MAKEFILES="$PRE" /usr/bin/make --no-print-directory -f "$MAKEFILE" check) >"$TEMP_ROOT/pre" 2>&1; then exit 1; fi; grep -Fq 'MAKEFILES must be empty' "$TEMP_ROOT/pre"; [ -e "$PRE_MARKER" ]
 EARLY="$TEMP_ROOT/early.mk"; EARLY_MARKER="$TEMP_ROOT/early-ran"; printf '%s\n' "\$(shell /usr/bin/touch '$EARLY_MARKER')" >"$EARLY"; if (cd "$CONTROL_DIR"&&/usr/bin/make --no-print-directory -f "$EARLY" -f "$MAKEFILE" check) >"$TEMP_ROOT/early" 2>&1; then exit 1; fi; [ -e "$EARLY_MARKER" ]
+LATER="$TEMP_ROOT/later.mk"; LATER_MARKER="$TEMP_ROOT/later-ran"; cat >"$LATER" <<'LATER_MAKE'
+build check contract-test lint root-test test verify: MAKEFILE_LIST := Makefile
+build check contract-test lint root-test test verify:
+	@/usr/bin/touch "$$TOOTHBRUSH_LATER_MARKER"
+LATER_MAKE
+for target in build check contract-test lint root-test test verify; do
+  rm -f "$LATER_MARKER"
+  if (cd "$CONTROL_DIR"&&TOOTHBRUSH_LATER_MARKER="$LATER_MARKER" /usr/bin/make --no-print-directory -f "$MAKEFILE" -f "$LATER" "$target" PYTHON="$FAKE_PYTHON" XCODEBUILD="$FAKE_XCODE") >"$TEMP_ROOT/later-$target" 2>&1; then exit 1; fi
+  grep -Fq 'has both : and :: entries' "$TEMP_ROOT/later-$target"
+  [ ! -e "$LATER_MARKER" ]
+done
+LATER_VARS="$TEMP_ROOT/later-vars.mk"; LATER_ROOT_MARKER="$TEMP_ROOT/later-root-ran"; mkdir -p "$ATTACKER_ROOT/scripts"; cat >"$ATTACKER_ROOT/scripts/test-makefile-root.sh" <<'SCRIPT'
+#!/bin/sh
+/usr/bin/touch "$TOOTHBRUSH_LATER_ROOT_MARKER"
+SCRIPT
+chmod +x "$ATTACKER_ROOT/scripts/test-makefile-root.sh"
+cat >"$LATER_VARS" <<LATER_VARS_MAKE
+build check contract-test lint root-test test verify: MAKEFILE_LIST := $MAKEFILE
+build check contract-test lint root-test test verify: ROOT := $ATTACKER_ROOT
+LATER_VARS_MAKE
+rm -f "$LOG"
+if ! (cd "$CONTROL_DIR"&&TOOTHBRUSH_COMMAND_LOG="$LOG" TOOTHBRUSH_LATER_ROOT_MARKER="$LATER_ROOT_MARKER" /usr/bin/make --no-print-directory -f "$MAKEFILE" -f "$LATER_VARS" root-test PYTHON="$FAKE_PYTHON" XCODEBUILD="$FAKE_XCODE") >"$TEMP_ROOT/later-vars" 2>&1; then cat "$TEMP_ROOT/later-vars" >&2; exit 1; fi
+grep -Fq "$CHECKOUT" "$LOG"
+[ ! -e "$LATER_ROOT_MARKER" ]
 if (cd "$CONTROL_DIR"&&/usr/bin/make --no-print-directory -f "$MAKEFILE" MAKEFLAGS=-n check) >"$TEMP_ROOT/makeflags" 2>&1; then exit 1; fi; grep -Fq 'MAKEFLAGS must not be overridden' "$TEMP_ROOT/makeflags"
 for flag in -n --just-print --dry-run --recon -t --touch -q --question -i --ignore-errors; do if (cd "$CONTROL_DIR"&&/usr/bin/make "$flag" --no-print-directory -f "$MAKEFILE" check) >"$TEMP_ROOT/flag" 2>&1; then exit 1; fi; grep -Fq 'non-executing or error-ignoring MAKEFLAGS are not supported' "$TEMP_ROOT/flag"; done
-printf '%s\n' 'Makefile root tests passed: 35 target/authority cases, 1 literal-dollar tool case, 2 raw tool Make-syntax rejections, 2 MAKEFILE_LIST rejections, 2 contained startup-boundary cases, 1 caller MAKEFLAGS rejection, and 10 mode-flag rejections'
+printf '%s\n' 'Makefile root tests passed: 35 target/authority cases, 1 literal-dollar tool case, 2 raw tool Make-syntax rejections, 2 MAKEFILE_LIST rejections, 2 contained startup-boundary cases, 7 later recipe-replacement rejections, 1 later target-specific root rejection, 1 caller MAKEFLAGS rejection, and 10 mode-flag rejections'

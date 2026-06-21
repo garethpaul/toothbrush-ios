@@ -65,10 +65,15 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   16 Pro simulator and the `build` target compiles the app and XCTest target
   with code signing disabled. The project uses Swift 5 and an iOS 12 deployment
   target.
-- Verification rejects caller-controlled roots, shells, startup makefiles,
+- Verification rejects caller-controlled roots, shells,
   non-executing/error-ignoring Make modes, and Make-syntax tool overrides.
-  Executable workflow mutations protect the absolute `/usr/bin/make` dispatch,
-  action pins, credentials, runners, timeouts, Python, and Xcode versions.
+  Startup files are parsed before repository checks can reject them, so they are
+  treated as caller-supplied Make programs outside the local trust boundary. The
+  public aliases use double-colon rules so later recipe replacement attempts
+  fail closed, and checked-in recipes embed the reviewed root and tool values
+  before later target-specific variables can alter them. Executable workflow
+  mutations protect the absolute `/usr/bin/make` dispatch, action pins,
+  credentials, runners, timeouts, Python, and Xcode versions.
 - Timer lifecycle checks also require teardown to invalidate timers and remove
   the custom navigation logo view. They also require view appearance to
   reattach the logo and view disappearance to stop an active timer through the
