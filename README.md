@@ -71,9 +71,12 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   treated as caller-supplied Make programs outside the local trust boundary. The
   public aliases use double-colon rules so later recipe replacement attempts
   fail closed, and checked-in recipes embed the reviewed root and tool values
-  before later target-specific variables can alter them. Executable workflow
-  mutations protect the absolute `/usr/bin/make` dispatch, action pins,
-  credentials, runners, timeouts, Python, and Xcode versions.
+  before later target-specific variables can alter them. The public aliases also
+  pin `/bin/sh` and `-c` target-specifically so later non-override shell
+  assignments cannot intercept validators. Caller-supplied Make programs that
+  use GNU Make `override` directives remain outside that local boundary.
+  Executable workflow mutations protect the absolute `/usr/bin/make` dispatch,
+  action pins, credentials, runners, timeouts, Python, and Xcode versions.
 - Timer lifecycle checks also require teardown to invalidate timers and remove
   the custom navigation logo view. They also require view appearance to
   reattach the logo and view disappearance to stop an active timer through the

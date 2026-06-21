@@ -10,6 +10,10 @@
   target definitions.
 - Embedded reviewed root and tool values into checked-in recipes before later
   target-specific Make variables can alter them.
+- Pinned `/bin/sh -c` target-specifically for public aliases so later
+  non-override shell variables cannot spoof guard or recipe success.
+- Documented caller-supplied Make programs that use GNU Make `override`
+  directives as outside the local boundary.
 - Added adversarial Make and workflow regression coverage and pinned both
   hosted gates to `/usr/bin/make`.
 

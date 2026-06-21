@@ -17,6 +17,8 @@ $(error XCODEBUILD must be a literal executable path, not Make syntax)
 endif
 override SHELL := /bin/sh
 override .SHELLFLAGS := -c
+build check contract-test lint root-test test verify __repository-make-authority: override SHELL := /bin/sh
+build check contract-test lint root-test test verify __repository-make-authority: override .SHELLFLAGS := -c
 
 ifneq ($(filter command line,$(origin MAKEFLAGS)),)
 $(error MAKEFLAGS must not be overridden for repository verification)

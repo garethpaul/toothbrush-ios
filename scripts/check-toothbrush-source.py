@@ -248,6 +248,8 @@ def project_checks():
         "PYTHON must be a literal executable path, not Make syntax",
         "XCODEBUILD must be a literal executable path, not Make syntax",
         "override SHELL := /bin/sh",
+        "build check contract-test lint root-test test verify __repository-make-authority: override SHELL := /bin/sh",
+        "build check contract-test lint root-test test verify __repository-make-authority: override .SHELLFLAGS := -c",
         "MAKEFLAGS must not be overridden for repository verification",
         "non-executing or error-ignoring MAKEFLAGS are not supported",
         "MAKEFILES must be empty",
@@ -292,6 +294,10 @@ def project_checks():
             errors.append(f"{docs_path} must document later recipe replacement protection")
         if "target-specific" not in text:
             errors.append(f"{docs_path} must document target-specific Make variable protection")
+        if "non-override shell" not in text:
+            errors.append(f"{docs_path} must document non-override shell variable protection")
+        if "override" not in text or "outside" not in text:
+            errors.append(f"{docs_path} must document caller override directives as outside the local boundary")
 
     scheme = SHARED_SCHEME.read_text(encoding="utf-8")
     for fragment in (

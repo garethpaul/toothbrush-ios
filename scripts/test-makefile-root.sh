@@ -53,6 +53,23 @@ rm -f "$LOG"
 if ! (cd "$CONTROL_DIR"&&TOOTHBRUSH_COMMAND_LOG="$LOG" TOOTHBRUSH_LATER_ROOT_MARKER="$LATER_ROOT_MARKER" /usr/bin/make --no-print-directory -f "$MAKEFILE" -f "$LATER_VARS" root-test PYTHON="$FAKE_PYTHON" XCODEBUILD="$FAKE_XCODE") >"$TEMP_ROOT/later-vars" 2>&1; then cat "$TEMP_ROOT/later-vars" >&2; exit 1; fi
 grep -Fq "$CHECKOUT" "$LOG"
 [ ! -e "$LATER_ROOT_MARKER" ]
+LATER_SHELL="$TEMP_ROOT/later-shell.mk"; LATER_SHELL_LOG="$TEMP_ROOT/later-shell.log"; LATER_FAKE_SHELL="$TEMP_ROOT/later-fake-shell"
+cat >"$LATER_FAKE_SHELL" <<'SCRIPT'
+#!/bin/sh
+printf '%s\n' "$*" >> "$TOOTHBRUSH_LATER_SHELL_LOG"
+printf '%s\n' ok
+exit 0
+SCRIPT
+chmod +x "$LATER_FAKE_SHELL"
+cat >"$LATER_SHELL" <<LATER_SHELL_MAKE
+build check contract-test lint root-test test verify: MAKEFILE_LIST := $MAKEFILE
+build check contract-test lint root-test test verify: SHELL := $LATER_FAKE_SHELL
+build check contract-test lint root-test test verify: .SHELLFLAGS := -c
+LATER_SHELL_MAKE
+rm -f "$LOG" "$LATER_SHELL_LOG"
+if ! (cd "$CONTROL_DIR"&&TOOTHBRUSH_COMMAND_LOG="$LOG" TOOTHBRUSH_LATER_SHELL_LOG="$LATER_SHELL_LOG" /usr/bin/make --no-print-directory -f "$MAKEFILE" -f "$LATER_SHELL" check PYTHON="$FAKE_PYTHON" XCODEBUILD="$FAKE_XCODE") >"$TEMP_ROOT/later-shell" 2>&1; then cat "$TEMP_ROOT/later-shell" >&2; exit 1; fi
+grep -Fq "$CHECKOUT" "$LOG"
+[ ! -e "$LATER_SHELL_LOG" ]
 if (cd "$CONTROL_DIR"&&/usr/bin/make --no-print-directory -f "$MAKEFILE" MAKEFLAGS=-n check) >"$TEMP_ROOT/makeflags" 2>&1; then exit 1; fi; grep -Fq 'MAKEFLAGS must not be overridden' "$TEMP_ROOT/makeflags"
 for flag in -n --just-print --dry-run --recon -t --touch -q --question -i --ignore-errors; do if (cd "$CONTROL_DIR"&&/usr/bin/make "$flag" --no-print-directory -f "$MAKEFILE" check) >"$TEMP_ROOT/flag" 2>&1; then exit 1; fi; grep -Fq 'non-executing or error-ignoring MAKEFLAGS are not supported' "$TEMP_ROOT/flag"; done
-printf '%s\n' 'Makefile root tests passed: 35 target/authority cases, 1 literal-dollar tool case, 2 raw tool Make-syntax rejections, 2 MAKEFILE_LIST rejections, 2 contained startup-boundary cases, 7 later recipe-replacement rejections, 1 later target-specific root rejection, 1 caller MAKEFLAGS rejection, and 10 mode-flag rejections'
+printf '%s\n' 'Makefile root tests passed: 35 target/authority cases, 1 literal-dollar tool case, 2 raw tool Make-syntax rejections, 2 MAKEFILE_LIST rejections, 2 contained startup-boundary cases, 7 later recipe-replacement rejections, 1 later target-specific root rejection, 1 later target-specific shell rejection, 1 caller MAKEFLAGS rejection, and 10 mode-flag rejections'
