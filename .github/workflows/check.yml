@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Run static baseline
-        run: make check
+        run: /usr/bin/make check
 
   xcode-build:
     runs-on: macos-15
@@ -41,4 +41,4 @@ jobs:
         with:
           persist-credentials: false
       - name: Run XCTest
-        run: make test
+        run: /usr/bin/make test

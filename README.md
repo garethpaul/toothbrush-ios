@@ -65,6 +65,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   16 Pro simulator and the `build` target compiles the app and XCTest target
   with code signing disabled. The project uses Swift 5 and an iOS 12 deployment
   target.
+- Verification rejects caller-controlled roots, shells, startup makefiles,
+  non-executing/error-ignoring Make modes, and Make-syntax tool overrides.
+  Executable workflow mutations protect the absolute `/usr/bin/make` dispatch,
+  action pins, credentials, runners, timeouts, Python, and Xcode versions.
 - Timer lifecycle checks also require teardown to invalidate timers and remove
   the custom navigation logo view. They also require view appearance to
   reattach the logo and view disappearance to stop an active timer through the
@@ -144,6 +148,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   that prevents the repeating timer from retaining its controller.
 - See `docs/plans/2026-06-14-make-root-override-protection.md` for authoritative
   repository-root selection across all Make aliases.
+- See `docs/plans/2026-06-21-make-authority-isolation.md` for the executable
+  Make and workflow trust-boundary regression coverage.
 - See `docs/plans/2026-06-14-testable-countdown-completion.md` for the pure
   running/completed deadline boundary used by timer callbacks and XCTest.
 - See `docs/plans/2026-06-14-countdown-label-grammar.md` for singular and plural
