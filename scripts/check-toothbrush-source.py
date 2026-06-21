@@ -248,20 +248,28 @@ def project_checks():
         "PYTHON must be a literal executable path, not Make syntax",
         "XCODEBUILD must be a literal executable path, not Make syntax",
         "override SHELL := /bin/sh",
+        "build check contract-test lint root-test test verify __repository-make-authority: override SHELL := /bin/sh",
+        "build check contract-test lint root-test test verify __repository-make-authority: override .SHELLFLAGS := -c",
         "MAKEFLAGS must not be overridden for repository verification",
         "non-executing or error-ignoring MAKEFLAGS are not supported",
         "MAKEFILES must be empty",
         "MAKEFILE_LIST must not be overridden",
-        "build check contract-test lint root-test test verify: __repository-make-authority",
-        "build: lint",
-        "contract-test:",
-        '"$$PYTHON" "$$ROOT/scripts/test_workflow_contract.py"',
-        "root-test:",
-        '"$$ROOT/scripts/test-makefile-root.sh"',
-        "verify: root-test lint contract-test test build",
-        "check: verify",
-        '"$$ROOT/scripts/check-toothbrush-source.py"',
-        '"$$ROOT/toothbrush.xcodeproj"',
+        "override REPOSITORY_SHELL_LITERAL",
+        "override REPOSITORY_ROOT_LITERAL :=",
+        "override REPOSITORY_PYTHON_LITERAL :=",
+        "override REPOSITORY_XCODEBUILD_LITERAL :=",
+        "build check contract-test lint root-test test verify:: __repository-make-authority",
+        "define REPOSITORY_PUBLIC_RECIPES",
+        "build:: lint",
+        "contract-test::",
+        "'$(REPOSITORY_PYTHON_LITERAL)' '$(REPOSITORY_ROOT_LITERAL)/scripts/test_workflow_contract.py'",
+        "root-test::",
+        "/bin/sh '$(REPOSITORY_ROOT_LITERAL)/scripts/test-makefile-root.sh'",
+        "verify:: root-test lint contract-test test build",
+        "check:: verify",
+        "$(eval $(REPOSITORY_PUBLIC_RECIPES))",
+        "'$(REPOSITORY_ROOT_LITERAL)/scripts/check-toothbrush-source.py'",
+        "'$(REPOSITORY_ROOT_LITERAL)/toothbrush.xcodeproj'",
         "-scheme toothbrush",
         "-destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'",
         "CODE_SIGNING_ALLOWED=NO test",
@@ -278,6 +286,18 @@ def project_checks():
         errors.append("README must index Make root override protection evidence")
     if "docs/plans/2026-06-21-make-authority-isolation.md" not in read_text("README.md"):
         errors.append("README must index Make authority isolation evidence")
+    for docs_path in ("README.md", "CHANGES.md", "docs/plans/2026-06-21-make-authority-isolation.md"):
+        text = re.sub(r"\s+", " ", read_text(docs_path)).lower()
+        if "startup files are parsed before repository checks can reject them" not in text:
+            errors.append(f"{docs_path} must document the startup-file fail-after-parse boundary")
+        if "later recipe replacement" not in text:
+            errors.append(f"{docs_path} must document later recipe replacement protection")
+        if "target-specific" not in text:
+            errors.append(f"{docs_path} must document target-specific Make variable protection")
+        if "non-override shell" not in text:
+            errors.append(f"{docs_path} must document non-override shell variable protection")
+        if "override" not in text or "outside" not in text:
+            errors.append(f"{docs_path} must document caller override directives as outside the local boundary")
 
     scheme = SHARED_SCHEME.read_text(encoding="utf-8")
     for fragment in (

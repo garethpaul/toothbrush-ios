@@ -3,7 +3,17 @@
 ## 2026-06-21
 
 - Isolated repository verification from caller-controlled Make roots, shells,
-  startup files, non-executing modes, and tool syntax.
+  non-executing modes, and tool syntax. Startup files are parsed before
+  repository checks can reject them, so the documented local boundary now treats
+  those files as caller-supplied Make programs.
+- Blocked later recipe replacement of public Make aliases with double-colon
+  target definitions.
+- Embedded reviewed root and tool values into checked-in recipes before later
+  target-specific Make variables can alter them.
+- Pinned `/bin/sh -c` target-specifically for public aliases so later
+  non-override shell variables cannot spoof guard or recipe success.
+- Documented caller-supplied Make programs that use GNU Make `override`
+  directives as outside the local boundary.
 - Added adversarial Make and workflow regression coverage and pinned both
   hosted gates to `/usr/bin/make`.
 
