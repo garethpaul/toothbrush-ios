@@ -34,12 +34,10 @@ Priority:
 - Keep GitHub Actions aligned with portable contracts and hosted XCTest execution
 - Keep the Swift 5, Xcode 16.4, and iOS 12 baseline explicit
 - Execute the app's offline XCTest target before merging
-
-Next priorities:
-
 - Keep testable countdown completion independent of live timer delays
 - Keep countdown label grammar correct for singular and plural values
-- Expand simulator-backed timer and accessibility assertions
+- Keep timer completion, label grammar, accessibility, and generation-test
+  guidance synchronized with hosted XCTest
 
 Contribution rules:
 

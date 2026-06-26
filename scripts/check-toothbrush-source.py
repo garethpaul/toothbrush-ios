@@ -22,6 +22,7 @@ ROOT_OVERRIDE_PLAN = DOCS_PLANS / "2026-06-14-make-root-override-protection.md"
 COUNTDOWN_COMPLETION_PLAN = DOCS_PLANS / "2026-06-14-testable-countdown-completion.md"
 COUNTDOWN_LABEL_PLAN = DOCS_PLANS / "2026-06-14-countdown-label-grammar.md"
 MAKE_AUTHORITY_PLAN = DOCS_PLANS / "2026-06-21-make-authority-isolation.md"
+ROADMAP_RECONCILIATION_PLAN = DOCS_PLANS / "2026-06-26-toothbrush-roadmap-reconciliation.md"
 CI_WORKFLOW = ROOT / ".github/workflows/check.yml"
 SHARED_SCHEME = ROOT / "toothbrush.xcodeproj/xcshareddata/xcschemes/toothbrush.xcscheme"
 CHECKOUT_ACTION = "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10"
@@ -97,6 +98,31 @@ def require_paths():
 
 def docs_plan_checks():
     errors = []
+    normalized_readme = " ".join(read_text("README.md").split())
+    for contract in (
+        "Timer XCTest Coverage",
+        "15-test shared XCTest suite",
+        "countdown completion without waiting for a live timer",
+        "`0 seconds`, `1 second`, and `120 seconds`",
+        "visible label and accessibility value",
+        "exactly-once completion reset",
+        "cancelled and restarted timer generations",
+        "Xcode 16.4 on the pinned iPhone 16 Pro / iOS 18.5 simulator",
+    ):
+        if contract not in normalized_readme:
+            errors.append(f"README timer coverage must preserve: {contract}")
+    normalized_vision = " ".join(read_text("VISION.md").split())
+    normalized_changes = " ".join(read_text("CHANGES.md").split())
+    if "Keep timer completion, label grammar, accessibility, and generation-test guidance synchronized with hosted XCTest" not in normalized_vision:
+        errors.append("VISION must preserve the completed timer-test documentation boundary")
+    if "Reconciled three completed timer roadmap items" not in normalized_changes:
+        errors.append("CHANGES must record the timer roadmap reconciliation")
+    if not ROADMAP_RECONCILIATION_PLAN.exists():
+        errors.append("timer roadmap reconciliation plan is missing")
+    else:
+        plan = ROADMAP_RECONCILIATION_PLAN.read_text(encoding="utf-8")
+        if "## Status: Completed" not in plan or "Reconcile Toothbrush iOS timer roadmap items" not in plan:
+            errors.append("timer roadmap reconciliation plan must record completed evidence")
     if not CANONICAL_PLAN.exists():
         errors.append("docs/plans/2026-06-08-toothbrush-ios-baseline.md is missing")
     if not NAVIGATION_LOGO_LIFECYCLE_PLAN.exists():

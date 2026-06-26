@@ -95,6 +95,24 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   completed deadline behavior covered without waiting two minutes. Countdown
   text uses countdown label grammar that keeps the final running value visible
   and announced as `1 second` while zero and larger values remain plural.
+
+### Timer XCTest Coverage
+
+The shared `toothbrush` scheme contains a 15-test shared XCTest suite. Timer
+coverage proves countdown completion without waiting for a live timer, including
+running values at the deadline boundary and completed values at and after it.
+Label tests require `0 seconds`, `1 second`, and `120 seconds`, and the
+controller test keeps the visible label and accessibility value synchronized.
+
+Controller-level tests also cover exactly-once completion reset, cancelled and
+restarted timer generations, prior-timer invalidation, deterministic prompt
+visibility, application-activation reconciliation, and controller release after
+timer setup. Static contracts bind those assertions to the same source paths
+used by the live timer.
+
+Hosted native authority is Xcode 16.4 on the pinned iPhone 16 Pro / iOS 18.5
+simulator. The Ubuntu gate validates the checked-in source and test structure;
+it does not substitute for native XCTest execution.
 - Static project checks also require completed canonical plans under `docs/plans`.
 - The shared `toothbrush` scheme executes the color-parser and deadline XCTest
   assertions on the pinned simulator destination.

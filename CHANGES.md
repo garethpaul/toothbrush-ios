@@ -1,5 +1,63 @@
 # Changes
 
+## 2026-06-26 02:16 - P2 - Reconcile completed timer roadmap work
+
+### Summary
+
+Reconciled three completed timer roadmap items against the maintained Swift
+source, completed plans, 15-test shared XCTest suite, static contracts, and
+hosted Xcode workflow.
+
+### Work completed
+
+- Documented pure countdown completion coverage that does not wait for a live
+  two-minute timer.
+- Documented singular/plural label assertions and the shared visible/accessibility
+  update path.
+- Documented exactly-once reset, stale generation, restart, prompt, activation,
+  and weak timer ownership coverage.
+- Removed only the three completed next-priority entries and replaced them with
+  an ongoing documentation/test synchronization boundary.
+
+### Threads
+
+- None. The cycle was completed directly after excluding repositories with
+  active public pull requests.
+
+### Files changed
+
+- `README.md` — added the maintained timer XCTest coverage guide.
+- `VISION.md` — retired completed timer priorities and preserved synchronization.
+- `scripts/check-toothbrush-source.py` — added fail-closed roadmap documentation contracts.
+- `docs/plans/2026-06-26-toothbrush-roadmap-reconciliation.md` — recorded the plan.
+
+### Validation
+
+- `python3 scripts/check-toothbrush-source.py --mode project` — passed after an expected red contract run.
+- Eleven hostile roadmap mutations — all rejected across coverage heading,
+  test count, completion, grammar, accessibility, reset, timer generations,
+  hosted authority, roadmap, history, and plan status.
+- `/usr/bin/make check` — passed from the checkout and an external working
+  directory with 35 Make authority cases, 17 workflow mutations, and all
+  project, timer, color, and accessibility contracts. The Linux host reported
+  the documented Xcode/XCTest skip.
+
+### Bugs / findings
+
+- VISION still described testable completion, label grammar, and expanded
+  simulator assertions as future work even though all three had completed plans,
+  source integration, static contracts, native tests, and hosted execution.
+
+### Blockers
+
+- Native XCTest cannot run on this Linux host; hosted Xcode 16.4 remains the
+  exact-head authority.
+
+### Next action
+
+- Keep timer behavior docs synchronized when the shared XCTest suite or pinned
+  simulator destination changes.
+
 ## 2026-06-21
 
 - Isolated repository verification from caller-controlled Make roots, shells,
